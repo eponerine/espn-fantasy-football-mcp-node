@@ -166,7 +166,7 @@ position labels, so unusual flex configurations are handled correctly.
 Slash-command style entry points for the questions people actually ask:
 
 `start-sit`, `waiver-wire-targets`, `trade-evaluation`, `matchup-preview`, `weekly-recap`,
-`power-rankings-writeup`, `playoff-outlook`, `roster-checkup`, `draft-review`,
+`weekly-recap-email`, `power-rankings-writeup`, `playoff-outlook`, `roster-checkup`, `draft-review`,
 `league-briefing`, `explain-my-league`, `lineup-legality-check`, `ir-and-bench-optimization`,
 `scoring-quirks`, `format-adjusted-rankings`.
 
