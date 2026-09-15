@@ -1,0 +1,26 @@
+{
+  "servers": {
+    "espn-fantasy-football": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/src/index.js"],
+      "env": {
+        "FF_API_BASE_URL": "http://localhost:3000",
+        "LEAGUE_ID": "${input:leagueId}",
+        "SEASON_YEAR": "${input:seasonYear}"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "id": "leagueId",
+      "type": "promptString",
+      "description": "ESPN fantasy league ID"
+    },
+    {
+      "id": "seasonYear",
+      "type": "promptString",
+      "description": "Season year (e.g. 2026)"
+    }
+  ]
+}

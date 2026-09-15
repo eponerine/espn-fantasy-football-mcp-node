@@ -1,0 +1,24 @@
+{
+  "name": "espn-fantasy-football-mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for the ESPN Fantasy Football Node API",
+  "type": "module",
+  "private": true,
+  "main": "src/index.js",
+  "bin": {
+    "espn-fantasy-football-mcp": "src/index.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test",
+    "inspect": "npx @modelcontextprotocol/inspector node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.6.5"
+  },
+  "license": "MIT"
+}
