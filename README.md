@@ -71,6 +71,39 @@ Environment variables are read from the process environment. Set them in your MC
 config (see `.vscode/mcp.json`) or export them in the shell — this server does not read
 `.env` itself, so use `node --env-file=.env src/index.js` if you want that.
 
+## Integrating into Host Applications
+
+### Claude Desktop
+
+Modify your `claude_desktop_config.json` file to include the following at the top of the JSON document. You can optionally include the `env` variables here but it's recommended to have them configured in the API itself:
+
+```
+{
+  "mcpServers": {
+    "espn-fantasy-football": {
+      "command": "cmd.exe",
+      "args": [
+        "/c",
+        "npm",
+        "start",
+        "--prefix",
+        "C:\\Git\\espn-fantasy-football-mcp-node"
+      ],
+      "env": {
+        "LEAGUE_ID": "123456",
+        "SEASON_YEAR": "2026",
+        "ESPN_S2": "xxxxxxxxxxxxxxxxxxx",
+        "SWID": "{3ac98880-8984-4546-8dab-cdb22e4cc387}"
+      }
+    }
+  },  
+  "preferences": {
+  ...
+  <snip>
+  ...
+}
+```
+
 ## Tools
 
 Every route in the upstream OpenAPI spec is covered.
