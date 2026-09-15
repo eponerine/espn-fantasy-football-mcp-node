@@ -190,6 +190,13 @@ export function registerPrompts(server) {
           'two sentence story. Call out the highest and lowest scorer of the week, the closest game',
           'and the biggest blowout.',
 
+          '\n\nSPECIAL CALLOUT — immediately after the scoreboard recap, set off a short highlighted',
+          'callout block (blockquote or bold header) crowning the week\'s top scorer: the team with the',
+          'most total points, their exact score, the margin over the second-highest team, and how that',
+          'score compares to their season average and to the league\'s best score of the season so far.',
+          'Also name the season-to-date total points (PF) leader in the same block, and say whether',
+          'that is the same team. Keep it to three or four punchy sentences.',
+
           '\n\nSECTION 2 — Boom / bust vs projection. Using the includeLineup box scores, compute for',
           'every STARTER: actual minus projected points, and the percentage of projection hit.',
           'Present a "Booms" table (top 5 overperformers) and a "Busts" table (bottom 5) with',
