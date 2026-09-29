@@ -146,8 +146,9 @@ export function registerPrompts(server) {
           'and get_activity.',
           'Cover: highest and lowest scorers, closest and most lopsided matchups, the worst bench',
           'blunder (a bench player who outscored a starter at the same position), the best waiver',
-          'pickup of the week, and how the playoff picture shifted.',
-          'Use real numbers from the tools. Do not invent NFL news.'
+          'pickup of the week, how injuries played into things (FAAB pickups, Free Agency, starts), and how the playoff picture shifted.',
+          'Use real numbers from the tools. Do not invent NFL news, and make sure to reference',
+          'injury status based on the date of the matchup, not the time the recap is ran.'
         ].join(' ')
       )
   );
@@ -202,14 +203,15 @@ export function registerPrompts(server) {
           'Present a "Booms" table (top 5 overperformers) and a "Busts" table (bottom 5) with',
           'columns: Player, Pos, Team (fantasy manager), Proj, Actual, +/-, % of Proj.',
           'Also give each fantasy team\'s total actual vs total projected so readers can see who got',
-          'lucky and who got robbed.',
+          'lucky and who got robbed. Make sure to check injury news and include where needed.',
 
           '\n\nSECTION 3 — Bench blunders. For each team, find bench players who outscored a starter',
           'that they were slot-eligible to replace (use the league profile lineup slots to check',
           'eligibility — do not claim a TE could have started at RB). Show: Manager, Benched Player',
           '(points), Started Player (points), Points Left On Bench. Then name the single worst',
           'blunder of the week and what the optimal lineup score would have been versus the actual',
-          'score for that team.',
+          'score for that team. Call out injuries if they occurred during a game. Or if someone',
+          'started an injured player and should not have',
 
           '\n\nSECTION 4 — Median / top-half scoring check. Read median_scoring from get_league_profile.',
           'If it is TRUE, this league awards a bonus WIN to every team in the top half of weekly',
@@ -233,8 +235,9 @@ export function registerPrompts(server) {
           'State the date and week the projections were generated as of, and warn that injuries and',
           'inactives will move these numbers. Finish with the one game of the week and why.',
 
-          '\n\nClose with a short sign-off line in the chosen tone. Keep tables clean Markdown so the',
-          'email renders anywhere. If any tool call fails or data is missing, say so in that section',
+          '\n\nClose with a short sign-off line in the chosen tone "See you next week".',
+          'Keep tables clean Markdown so the email renders anywhere.',
+          'If any tool call fails or data is missing, say so in that section',
           'rather than filling the gap with guesses.'
         ]
           .filter(Boolean)
