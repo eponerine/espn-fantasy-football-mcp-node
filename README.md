@@ -127,6 +127,7 @@ Every route in the upstream OpenAPI spec is covered.
 | `get_player_info` | `/player-info` | Player card by name or ESPN player id. |
 | `get_league_profile` | *composite* | **Start here.** Raw ESPN settings translated into plain English. |
 | `check_lineup` | *composite* | Lineup legality and optimization audit against the league's real slots. |
+| `get_injury_report` | *composite* | Non-healthy designations among the top-N season scorers, injury timing from game logs, and positions each team must fill. Cached 30 min per league/week. |
 | `explain_fantasy_football` | — | Fantasy primer: formats, scoring, slots, waivers, jargon. |
 | `how_to_answer` | — | Which tools to combine for common question types. |
 

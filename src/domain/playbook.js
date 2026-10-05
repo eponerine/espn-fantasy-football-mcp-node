@@ -87,10 +87,12 @@ export const QUESTION_PLAYBOOK = [
   },
   {
     question: 'Recap the week / write a league newsletter',
-    tools: ['get_scoreboard', 'get_box_scores', 'get_power_rankings', 'get_activity'],
+    tools: ['get_scoreboard', 'get_box_scores', 'get_power_rankings', 'get_activity', 'get_injury_report'],
     approach:
       'Highlight the highest and lowest scores, closest margin, biggest bench blunder ' +
-      '(bench player who outscored a starter), and notable roster moves from activity.'
+      '(bench player who outscored a starter), and notable roster moves from activity. ' +
+      'Call get_injury_report once for the recap week and reuse it: report new injuries among ' +
+      'the top 100 scorers, then note each affected team\'s positions to fill.'
   },
   {
     question: 'How did my draft go?',
