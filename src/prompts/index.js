@@ -143,11 +143,20 @@ export function registerPrompts(server) {
           `Write a league recap for ${week ? `week ${week}` : 'the most recently completed week'}`,
           `in a ${tone || 'snarky but fair'} tone.`,
           'Use get_scoreboard, get_box_scores with includeLineup=true, get_standings, get_power_rankings',
-          'and get_activity.',
+          'and get_activity. Call get_injury_report once for the recap week and keep the result in',
+          'context for the whole recap — do not call it again.',
+          'Open with an injury report: every top-100 season scorer whose current designation is not',
+          'healthy, grouped by fantasy team, saying what the game log shows happened (hurt in the',
+          'game, missed the game, or an ongoing absence). If you have a news or web search tool, use',
+          'it to confirm the injury type and expected timeline; otherwise say only what the data shows.',
+          'Then, when you get to each fantasy team, add a sentence or two naming its injured players',
+          'from that cached report and the position(s) the manager now needs to fill, citing the best',
+          'bench option or saying a waiver pickup is needed.',
           'Cover: highest and lowest scorers, closest and most lopsided matchups, the worst bench',
           'blunder (a bench player who outscored a starter at the same position), the best waiver',
           'pickup of the week, how injuries played into things (FAAB pickups, Free Agency, starts), and how the playoff picture shifted.',
-          'Use real numbers from the tools. Do not invent NFL news, and make sure to reference',
+          'Use real numbers from the tools. Do not invent NFL news. The injury report reflects status',
+          'as of now; when describing what happened during the matchups themselves, reference',
           'injury status based on the date of the matchup, not the time the recap is ran.'
         ].join(' ')
       )
@@ -158,7 +167,7 @@ export function registerPrompts(server) {
     {
       title: 'Weekly recap email',
       description:
-        'Full commissioner-style recap email: boom/bust vs projections, bench blunders, a sorted power-rankings table and next week\'s projected matchups.',
+        'Full commissioner-style recap email: top-100 injury report, boom/bust vs projections, bench blunders, a sorted power-rankings table and next week\'s projected matchups.',
       argsSchema: z.object({
         week: optionalString('Week to recap. Defaults to the most recently completed week.'),
         tone: optionalString('Tone to write in: analytical, snarky, broadcast, or roast.'),
@@ -186,10 +195,25 @@ export function registerPrompts(server) {
           '7. get_matchups (and get_scoreboard) for the NEXT week\'s schedule. If next week is beyond',
           'current_week, get_box_scores will fail for it — use get_matchups plus season-level roster',
           'strength instead and say the projections are estimates.',
+          '8. get_injury_report for the recap week. Call it ONCE and keep the full result in context',
+          'as your injury cache — Section 1 and Section 2 both draw from it; do not call it again.',
 
-          '\n\nSECTION 1 — Scoreboard recap. For each matchup: final score, the margin, and a one or',
+          '\n\nSECTION 1 — Injury report. Scope: the season-to-date top 100 scorers whose CURRENT',
+          'designation is not healthy (state the status_as_of time). Lead with injuries that are new',
+          'this week (is_new_this_week=true), then list ongoing absences briefly. Present a table with',
+          'columns: Player, Pos (YTD pos rank), NFL Team, Fantasy Team, Status, What Happened.',
+          'Fill What Happened from injury_timing and the game_log (e.g. "played wk N, 3.1 pts on a',
+          '14.0 projection — likely hurt in-game" or "missed wk N after playing wk N-1"). If you have',
+          'a news or web search tool, use it to confirm the injury type and expected return and add',
+          'a short "What to watch" note per new injury; if not, say no news source was available and',
+          'do not guess the injury or timeline. If injured_count is 0, say the top 100 came out clean.',
+
+          '\n\nSECTION 2 — Scoreboard recap. For each matchup: final score, the margin, and a one or',
           'two sentence story. Call out the highest and lowest scorer of the week, the closest game',
-          'and the biggest blowout.',
+          'and the biggest blowout. Then, for each team that appears in the cached injury report\'s',
+          'by_team list, add a sentence or two naming its injured players and the position(s) it now',
+          'needs to fill, citing the best bench_options entry or, when needs_waiver_help is true,',
+          'saying the manager should look to the waiver wire. Teams in healthy_teams need no mention.',
 
           '\n\nSPECIAL CALLOUT — immediately after the scoreboard recap, set off a short highlighted',
           'callout block (blockquote or bold header) crowning the week\'s top scorer: the team with the',
@@ -198,14 +222,14 @@ export function registerPrompts(server) {
           'Also name the season-to-date total points (PF) leader in the same block, and say whether',
           'that is the same team. Keep it to three or four punchy sentences.',
 
-          '\n\nSECTION 2 — Boom / bust vs projection. Using the includeLineup box scores, compute for',
+          '\n\nSECTION 3 — Boom / bust vs projection. Using the includeLineup box scores, compute for',
           'every STARTER: actual minus projected points, and the percentage of projection hit.',
           'Present a "Booms" table (top 5 overperformers) and a "Busts" table (bottom 5) with',
           'columns: Player, Pos, Team (fantasy manager), Proj, Actual, +/-, % of Proj.',
           'Also give each fantasy team\'s total actual vs total projected so readers can see who got',
           'lucky and who got robbed. Make sure to check injury news and include where needed.',
 
-          '\n\nSECTION 3 — Bench blunders. For each team, find bench players who outscored a starter',
+          '\n\nSECTION 4 — Bench blunders. For each team, find bench players who outscored a starter',
           'that they were slot-eligible to replace (use the league profile lineup slots to check',
           'eligibility — do not claim a TE could have started at RB). Show: Manager, Benched Player',
           '(points), Started Player (points), Points Left On Bench. Then name the single worst',
@@ -213,7 +237,7 @@ export function registerPrompts(server) {
           'score for that team. Call out injuries if they occurred during a game. Or if someone',
           'started an injured player and should not have',
 
-          '\n\nSECTION 4 — Median / top-half scoring check. Read median_scoring from get_league_profile.',
+          '\n\nSECTION 5 — Median / top-half scoring check. Read median_scoring from get_league_profile.',
           'If it is TRUE, this league awards a bonus WIN to every team in the top half of weekly',
           'scoring and a bonus LOSS to the bottom half, so a team can go 2-0 or 0-2 in a week.',
           'In that case: compute the league median score for the week, list which teams earned the',
@@ -223,14 +247,14 @@ export function registerPrompts(server) {
           'If median_scoring is FALSE, state in one line that this league does NOT use top-half',
           'bonus wins and skip the rest of this section. Do not assume either way.',
 
-          '\n\nSECTION 5 — Power rankings table, sorted best to worst by current power ranking.',
+          '\n\nSECTION 6 — Power rankings table, sorted best to worst by current power ranking.',
           'Columns: Rank, Change (movement versus last week\'s power ranking, e.g. +2 / -1 / —),',
           'Team, Record, This Week\'s Score, PF (season), PA (season), Trend.',
           'The Trend column is a short blurb (roughly 10-15 words) on direction of travel: hot,',
           'cooling, overachieving their points, unlucky, fading, etc. Ground it in the numbers —',
           'compare record against PF, and this week\'s score against their season average.',
 
-          '\n\nSECTION 6 — Next week\'s matchups table. Columns: Matchup, Projected Score, Projected',
+          '\n\nSECTION 7 — Next week\'s matchups table. Columns: Matchup, Projected Score, Projected',
           'Winner, Win Confidence (lock / lean / coin flip), and the swing player to watch.',
           'State the date and week the projections were generated as of, and warn that injuries and',
           'inactives will move these numbers. Finish with the one game of the week and why.',
