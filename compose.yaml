@@ -1,0 +1,30 @@
+services:
+  fantasy-mcp:
+    build: .
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 60s
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: "3001"
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:?Set MCP_AUTH_TOKEN in the shell or .env}
+      MCP_ALLOWED_HOSTS: ${MCP_ALLOWED_HOSTS:-fantasy-mcp,localhost,127.0.0.1}
+      MCP_ALLOWED_ORIGINS: ${MCP_ALLOWED_ORIGINS:-}
+      MCP_MAX_CONCURRENT_REQUESTS: ${MCP_MAX_CONCURRENT_REQUESTS:-16}
+      MCP_SHUTDOWN_TIMEOUT_MS: ${MCP_SHUTDOWN_TIMEOUT_MS:-55000}
+      FF_API_BASE_URL: ${FF_API_BASE_URL:-http://fantasy-api:3000}
+      LEAGUE_ID: ${LEAGUE_ID:-}
+      SEASON_YEAR: ${SEASON_YEAR:-}
+      ESPN_S2: ${ESPN_S2:-}
+      SWID: ${SWID:-}
+      FF_API_TIMEOUT_MS: ${FF_API_TIMEOUT_MS:-20000}
+      FF_CACHE_TTL_MS: ${FF_CACHE_TTL_MS:-60000}
+    expose:
+      - "3001"
+    networks:
+      - shared
+networks:
+  shared:
+    external: true
+    name: ${MCP_DOCKER_NETWORK:-fantasy-network}
