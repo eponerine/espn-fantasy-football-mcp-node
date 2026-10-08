@@ -1,0 +1,47 @@
+{
+  "week": 2,
+  "matchups": [
+    {
+      "home_team": "Football and Crabcakes ",
+      "away_team": "Doo Doo Baby",
+      "home_score": 73.95,
+      "away_score": 132.3,
+      "is_playoff": false
+    },
+    {
+      "home_team": "Christian Mingle",
+      "away_team": "NABERHOOD WATCH",
+      "home_score": 112.8,
+      "away_score": 110.75,
+      "is_playoff": false
+    },
+    {
+      "home_team": "Chargin' Chucks",
+      "away_team": "Hot Toddy",
+      "home_score": 125.85,
+      "away_score": 121.45,
+      "is_playoff": false
+    },
+    {
+      "home_team": "Joseph's Scary Team",
+      "away_team": "THE RETIRED GUY",
+      "home_score": 139.1,
+      "away_score": 161.2,
+      "is_playoff": false
+    },
+    {
+      "home_team": "Boogie Suckers ",
+      "away_team": "Pewter City Geodudes",
+      "home_score": 136.15,
+      "away_score": 172.45,
+      "is_playoff": false
+    },
+    {
+      "home_team": "Red Pandas",
+      "away_team": "3kids and a horse ",
+      "home_score": 115.85,
+      "away_score": 126.65,
+      "is_playoff": false
+    }
+  ]
+}

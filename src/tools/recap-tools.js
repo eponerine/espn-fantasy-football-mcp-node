@@ -1,0 +1,132 @@
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import * as z from 'zod/v4';
+import { buildRecapData } from '../../recap/build.js';
+import { jsonResult, READ_ONLY, safeHandler } from './shared.js';
+
+const TEAM_NAME_CACHE = process.env.RECAP_TEAM_NAME_CACHE
+  ? resolve(process.env.RECAP_TEAM_NAME_CACHE)
+  : fileURLToPath(new URL('../../.recap-team-name-snapshots.json', import.meta.url));
+
+async function readNameSnapshots() {
+  try {
+    return JSON.parse(await readFile(TEAM_NAME_CACHE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+async function writeNameSnapshots(snapshots) {
+  await mkdir(dirname(TEAM_NAME_CACHE), { recursive: true });
+  const temporary = `${TEAM_NAME_CACHE}.tmp`;
+  await writeFile(temporary, `${JSON.stringify(snapshots, null, 2)}\n`);
+  await rename(temporary, TEAM_NAME_CACHE);
+}
+
+function collection(payload, key) {
+  if (Array.isArray(payload)) return payload;
+  return payload?.[key] ?? [];
+}
+
+export function createRecapHandler(client) {
+  return async function getRecapData({ week: requestedWeek, include_preview: includePreview = true } = {}) {
+    const requestCache = new Map();
+    const get = (path, params = {}) => {
+      const key = `${path}?${new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)])).toString()}`;
+      if (!requestCache.has(key)) {
+        requestCache.set(key, client.get(path, params, { useConfiguredScope: false }));
+      }
+      return requestCache.get(key);
+    };
+
+    const [league, settingsPayload, teamsPayload] = await Promise.all([
+      get('/league'),
+      get('/settings'),
+      get('/teams')
+    ]);
+    const settings = settingsPayload.settings ?? settingsPayload;
+    const teams = collection(teamsPayload, 'teams');
+    if (!teams.length) throw new Error('The configured API returned no teams.');
+    const regularSeasonWeeks = Number(settings.reg_season_count) || Number(league.current_week) - 1;
+    const defaultWeek = Math.max(1, Math.min(Number(league.current_week) - 1, regularSeasonWeeks));
+    const week = requestedWeek ?? defaultWeek;
+    if (week > Number(league.current_week)) {
+      throw new Error(`Week ${week} has not completed; current league week is ${league.current_week}.`);
+    }
+
+    const boxScoresByWeek = await Promise.all(Array.from({ length: week }, (_, index) => index + 1)
+      .map((scoringWeek) => get('/box-scores', { week: scoringWeek, includeLineup: true })));
+    const nextWeek = week + 1;
+    const rosterResponses = await Promise.all(teams.map((team) => get('/roster', { teamId: team.team_id, week: nextWeek })));
+    const [transactionPayload, previewPayload, powerPayload, priorPowerPayload] = await Promise.all([
+      get('/transactions', { scoringPeriod: week }),
+      includePreview ? get('/matchups', { week: nextWeek }) : Promise.resolve(null),
+      get('/power-rankings', { week }),
+      week > 1 ? get('/power-rankings', { week: week - 1 }) : Promise.resolve(null)
+    ]);
+    const matchupsArePlayoffs = collection(boxScoresByWeek.at(-1), 'box_scores').some((matchup) => matchup.is_playoff);
+    const regularSeason = week <= regularSeasonWeeks && !matchupsArePlayoffs;
+    const snapshots = await readNameSnapshots();
+    const scopeKey = `${league.league_id ?? 'default'}:${league.year ?? league.season ?? 'unknown'}`;
+    const leagueSnapshots = snapshots[scopeKey] ?? {};
+    const recap = buildRecapData({
+      league,
+      settings,
+      teams,
+      week,
+      regularSeason,
+      boxScoresByWeek,
+      rosterResponses,
+      transactions: collection(transactionPayload, 'transactions'),
+      previewMatchups: collection(previewPayload, 'matchups'),
+      espnPowerRankings: powerPayload,
+      espnPriorPowerRankings: priorPowerPayload,
+      nameSnapshots: leagueSnapshots
+    });
+    leagueSnapshots[String(week)] = recap.name_snapshot;
+    const retainedWeeks = Object.keys(leagueSnapshots).map(Number).sort((left, right) => right - left).slice(0, 3);
+    const retained = Object.fromEntries(retainedWeeks.map((snapshotWeek) => [String(snapshotWeek), leagueSnapshots[String(snapshotWeek)]]));
+    await writeNameSnapshots({ ...snapshots, [scopeKey]: retained });
+    delete recap.name_snapshot;
+    return recap;
+  };
+}
+
+const weekSchema = z.number().int().min(1).optional();
+const recapInput = z.object({
+  week: weekSchema,
+  include_preview: z.boolean().optional().default(true)
+});
+
+export function registerRecapTools(server, client) {
+  const handler = createRecapHandler(client);
+  server.registerTool(
+    'get_recap_data',
+    {
+      title: 'Deterministic weekly recap data',
+      description: 'Compute a complete, validated weekly recap dataset from league scores, rosters and transactions.',
+      inputSchema: recapInput,
+      annotations: READ_ONLY
+    },
+    safeHandler(async (args) => jsonResult(await handler(args)))
+  );
+
+  const sections = [
+    ['get_all_play', 'all-play standings and expected wins', (data) => data.standings.map((row) => ({
+      team_id: row.team_id, team: row.name, record: row.all_play, win_pct: row.all_play_win_pct,
+      expected_wins: row.expected_wins, luck_delta: row.luck_delta
+    }))],
+    ['get_bench_analysis', 'optimal lineups, bench points and what-if results', (data) => data.bench_analysis],
+    ['get_faab_summary', 'deduplicated FAAB claims and bidding wars', (data) => data.roster_moves],
+    ['get_availability', 'next-week roster injuries, byes and position gaps', (data) => data.injuries_and_byes],
+    ['get_recap_validation', 'reconciliation checks for the recap dataset', (data) => data.validation]
+  ];
+  for (const [name, description, select] of sections) {
+    server.registerTool(
+      name,
+      { title: description, description: `Return ${description} for a recap week.`, inputSchema: z.object({ week: weekSchema }), annotations: READ_ONLY },
+      safeHandler(async ({ week }) => jsonResult(select(await handler({ week, include_preview: false }))))
+    );
+  }
+}

@@ -128,10 +128,63 @@ Every route in the upstream OpenAPI spec is covered.
 | `get_league_profile` | *composite* | **Start here.** Raw ESPN settings translated into plain English. |
 | `check_lineup` | *composite* | Lineup legality and optimization audit against the league's real slots. |
 | `get_injury_report` | *composite* | Non-healthy designations among the top-N season scorers, injury timing from game logs, and positions each team must fill. Cached 30 min per league/week. |
+| `get_recap_data` | *composite* | Full deterministic weekly recap JSON with scoring, standings, all-play, optimal lineups, transactions, availability, power rankings and validation. |
+| `get_all_play` | *composite* | All-play records, expected wins and luck delta. |
+| `get_bench_analysis` | *composite* | Optimal lineups, points left on the bench, swaps and result what-ifs. |
+| `get_faab_summary` | *composite* | Deduplicated executed/failed claims, FAAB totals and bidding wars. |
+| `get_availability` | *composite* | Next-week roster byes, injury statuses and positional coverage facts. |
+| `get_recap_validation` | *composite* | Recap reconciliation checks, including any failures. |
 | `explain_fantasy_football` | — | Fantasy primer: formats, scoring, slots, waivers, jargon. |
 | `how_to_answer` | — | Which tools to combine for common question types. |
 
 `leagueId` and `year` are optional on every tool and fall back to `LEAGUE_ID` / `SEASON_YEAR`.
+
+### Deterministic weekly recaps
+
+`get_recap_data` accepts optional `week` and `include_preview` fields. If `week` is omitted, it
+uses the last completed regular-season week. It returns the league and team identities, `week_summary`,
+`scoreboard`, `standings`, `season_summary`, player highlights and callbacks, `bench_analysis`,
+`roster_moves`, `injuries_and_byes`, `power_rankings`, `preview`, and `validation`. Numeric results
+are computed by pure functions under `recap/`; points are accumulated in cents and rounded only for
+output. Check `validation.passed` before writing commentary. The `weekly_recap` prompt contains the
+required writing format and tells the writing model to compute no numbers itself.
+
+The recap fetches each scoring week once per request, then requests all next-week rosters together.
+Its tool calls leave league IDs and ESPN cookies out of the request so a preconfigured upstream API
+can supply them. Existing tools keep their normal client defaults. Team-name snapshots are stored in
+`.recap-team-name-snapshots.json` (or the path in `RECAP_TEAM_NAME_CACHE`) for rename detection.
+Teams and rosters endpoints in some API builds do not expose owner display names; those are returned
+as `null` when unavailable.
+
+The top-level JSON shape is:
+
+```json
+{
+  "meta": {},
+  "teams": [],
+  "week_summary": {},
+  "scoreboard": [],
+  "standings": [],
+  "season_summary": {},
+  "players": { "studs": [], "duds": [], "bench_top": [], "qb_flips": [] },
+  "bench_analysis": { "teams": [], "league_total_left": 0, "what_ifs": [] },
+  "roster_moves": { "teams": [], "bidding_wars": [], "league_faab_total": 0 },
+  "injuries_and_byes": { "bye_teams": [], "teams": [] },
+  "power_rankings": [],
+  "preview": [],
+  "validation": { "passed": true, "checks": [] }
+}
+```
+
+Refresh live raw-response fixtures while the local API is running on port 3000:
+
+```powershell
+node scripts/refresh-recap-fixtures.js
+```
+
+This captures weeks 1-4, week 4 transactions, week 5 matchups/rankings and every team roster for
+week 5 under `tests/fixtures/`. The fixture files are raw API JSON; the test suite uses them for the
+week 4 golden values and lineup solver cross-checks.
 
 ### The interpreter tools
 

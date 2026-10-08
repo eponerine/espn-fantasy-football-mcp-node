@@ -1,0 +1,1121 @@
+{
+  "settings": {
+    "reg_season_count": 14,
+    "matchup_periods": {
+      "1": [
+        1
+      ],
+      "2": [
+        2
+      ],
+      "3": [
+        3
+      ],
+      "4": [
+        4
+      ],
+      "5": [
+        5
+      ],
+      "6": [
+        6
+      ],
+      "7": [
+        7
+      ],
+      "8": [
+        8
+      ],
+      "9": [
+        9
+      ],
+      "10": [
+        10
+      ],
+      "11": [
+        11
+      ],
+      "12": [
+        12
+      ],
+      "13": [
+        13
+      ],
+      "14": [
+        14
+      ],
+      "15": [
+        15
+      ],
+      "16": [
+        16
+      ],
+      "17": [
+        17
+      ]
+    },
+    "veto_votes_required": 6,
+    "team_count": 12,
+    "playoff_team_count": 6,
+    "keeper_count": 1,
+    "trade_deadline": 1796371200000,
+    "division_map": {
+      "0": "New Jersey"
+    },
+    "name": "DIRTY JERZY - FOR KEEPS",
+    "tie_rule": "NONE",
+    "playoff_tie_rule": "NONE",
+    "playoff_matchup_period_length": 1,
+    "playoff_seed_tie_rule": "TOTAL_POINTS_SCORED",
+    "scoring_type": "H2H_POINTS",
+    "median_scoring": true,
+    "_raw_scoring_settings": {
+      "allowOutOfPositionScoring": false,
+      "homeTeamBonus": 0,
+      "matchupTieRule": "NONE",
+      "matchupTieRuleBy": 0,
+      "playerRankType": "PPR",
+      "playoffHomeTeamBonus": 0,
+      "playoffMatchupTieRule": "NONE",
+      "playoffMatchupTieRuleBy": 0,
+      "scoringEnhancementType": "WIN_BONUS_TOP_HALF",
+      "scoringItems": [
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 56
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -1
+          },
+          "statId": 123
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 3,
+          "statId": 38
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -3
+          },
+          "statId": 133
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 6,
+          "statId": 25
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 1,
+          "statId": 53
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": -2,
+          "statId": 72
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -5
+          },
+          "statId": 134
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -6
+          },
+          "statId": 135
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -7
+          },
+          "statId": 136
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 6,
+          "statId": 43
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 6,
+          "pointsOverrides": {
+            "16": 6
+          },
+          "statId": 102
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0.1,
+          "statId": 24
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 6,
+          "pointsOverrides": {
+            "16": 6
+          },
+          "statId": 101
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 3,
+          "statId": 18
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 6,
+          "pointsOverrides": {
+            "16": 6
+          },
+          "statId": 104
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 5
+          },
+          "statId": 128
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -5
+          },
+          "statId": 125
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": -1,
+          "statId": 85
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 1,
+          "statId": 86
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -3
+          },
+          "statId": 124
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": -1
+          },
+          "statId": 132
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0.1,
+          "statId": 42
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": -1,
+          "statId": 88
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 3
+          },
+          "statId": 129
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 6,
+          "statId": 4
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 6
+          },
+          "statId": 103
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 2
+          },
+          "statId": 130
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 5
+          },
+          "statId": 89
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 6
+          },
+          "statId": 93
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 4
+          },
+          "statId": 90
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 2
+          },
+          "statId": 95
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 15
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 2
+          },
+          "statId": 98
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 3
+          },
+          "statId": 91
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 17
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 2
+          },
+          "statId": 96
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 2
+          },
+          "statId": 97
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 19
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": -2,
+          "statId": 20
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0.25,
+          "statId": 5
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 6,
+          "statId": 63
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 3,
+          "statId": 80
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 26
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 4,
+          "statId": 77
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 1
+          },
+          "statId": 92
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 0,
+          "pointsOverrides": {
+            "16": 1
+          },
+          "statId": 99
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 35
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 37
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 44
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 2,
+          "statId": 45
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 5,
+          "statId": 201
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 3,
+          "statId": 57
+        },
+        {
+          "isReverseItem": false,
+          "leagueRanking": 0,
+          "leagueTotal": 0,
+          "points": 5,
+          "statId": 198
+        }
+      ],
+      "scoringType": "H2H_POINTS"
+    },
+    "_raw_schedule_settings": {
+      "consolationLadderDisabled": false,
+      "divisions": [
+        {
+          "id": 0,
+          "name": "New Jersey",
+          "size": 12
+        }
+      ],
+      "matchupPeriodCount": 14,
+      "matchupPeriodLength": 1,
+      "matchupPeriods": {
+        "1": [
+          1
+        ],
+        "2": [
+          2
+        ],
+        "3": [
+          3
+        ],
+        "4": [
+          4
+        ],
+        "5": [
+          5
+        ],
+        "6": [
+          6
+        ],
+        "7": [
+          7
+        ],
+        "8": [
+          8
+        ],
+        "9": [
+          9
+        ],
+        "10": [
+          10
+        ],
+        "11": [
+          11
+        ],
+        "12": [
+          12
+        ],
+        "13": [
+          13
+        ],
+        "14": [
+          14
+        ],
+        "15": [
+          15
+        ],
+        "16": [
+          16
+        ],
+        "17": [
+          17
+        ]
+      },
+      "periodTypeId": 1,
+      "playoffMatchupPeriodLength": 1,
+      "playoffReseed": false,
+      "playoffSeedingRule": "TOTAL_POINTS_SCORED",
+      "playoffSeedingRuleBy": 0,
+      "playoffTeamCount": 6,
+      "variablePlayoffMatchupPeriodLength": false
+    },
+    "_raw_roster_settings": {
+      "autoPilotTypeSupported": "NONE",
+      "isBenchUnlimited": true,
+      "isUsingUndroppableList": true,
+      "lineupLocktimeType": "INDIVIDUAL_GAME",
+      "lineupSlotCounts": {
+        "0": 1,
+        "1": 0,
+        "2": 2,
+        "3": 0,
+        "4": 2,
+        "5": 0,
+        "6": 1,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 1,
+        "17": 1,
+        "18": 0,
+        "19": 0,
+        "20": 6,
+        "21": 1,
+        "22": 0,
+        "23": 2,
+        "24": 0
+      },
+      "lineupSlotStatLimits": {},
+      "moveLimit": -1,
+      "positionLimits": {
+        "0": 0,
+        "1": 4,
+        "2": 8,
+        "3": 8,
+        "4": 3,
+        "5": 3,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": -1,
+        "16": 3,
+        "17": 0
+      },
+      "rosterLocktimeType": "INDIVIDUAL_GAME",
+      "universeIds": [
+        0
+      ]
+    },
+    "faab": true,
+    "acquisition_budget": 100,
+    "acquisition_limit": -1,
+    "matchup_acquisition_limit": 0,
+    "matchup_limit_per_scoring_period": false,
+    "minimum_bid": 0,
+    "waiver_process_days": [
+      "SUNDAY",
+      "WEDNESDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "THURSDAY",
+      "MONDAY"
+    ],
+    "waiver_process_hour": 11,
+    "trade_revision_hours": 48,
+    "scoring_format": [
+      {
+        "abbr": "56",
+        "label": "receiving100To199YardGame",
+        "id": 56,
+        "points": 2
+      },
+      {
+        "abbr": "PA28-34",
+        "label": "28-34 Points Allowed",
+        "id": 123,
+        "points": -1
+      },
+      {
+        "abbr": "38",
+        "label": "rushing200PlusYardGame",
+        "id": 38,
+        "points": 3
+      },
+      {
+        "abbr": "YA400-449",
+        "label": "400-449 Yards Allowed",
+        "id": 133,
+        "points": -3
+      },
+      {
+        "abbr": "RTD",
+        "label": "TD Rush",
+        "id": 25,
+        "points": 6
+      },
+      {
+        "abbr": "RECS",
+        "label": "Receptions",
+        "id": 53,
+        "points": 1
+      },
+      {
+        "abbr": "FUML",
+        "label": "Total Fumbles Lost",
+        "id": 72,
+        "points": -2
+      },
+      {
+        "abbr": "YA450-499",
+        "label": "450-499 Yards Allowed",
+        "id": 134,
+        "points": -5
+      },
+      {
+        "abbr": "YA500-549",
+        "label": "500-549 Yards Allowed",
+        "id": 135,
+        "points": -6
+      },
+      {
+        "abbr": "YA550+",
+        "label": "550+ Yards Allowed",
+        "id": 136,
+        "points": -7
+      },
+      {
+        "abbr": "RETD",
+        "label": "TD Reception",
+        "id": 43,
+        "points": 6
+      },
+      {
+        "abbr": "102",
+        "label": "puntReturnTouchdowns",
+        "id": 102,
+        "points": 6
+      },
+      {
+        "abbr": "RY",
+        "label": "Rushing Yards",
+        "id": 24,
+        "points": 0.1
+      },
+      {
+        "abbr": "101",
+        "label": "kickoffReturnTouchdowns",
+        "id": 101,
+        "points": 6
+      },
+      {
+        "abbr": "P400",
+        "label": "400+ yard passing game",
+        "id": 18,
+        "points": 3
+      },
+      {
+        "abbr": "104",
+        "label": "fumbleReturnTouchdowns",
+        "id": 104,
+        "points": 6
+      },
+      {
+        "abbr": "YA0-99",
+        "label": "0-99 Yards Allowed",
+        "id": 128,
+        "points": 5
+      },
+      {
+        "abbr": "PA45+",
+        "label": "45+ Points Allowed",
+        "id": 125,
+        "points": -5
+      },
+      {
+        "abbr": "85",
+        "label": "missedFieldGoals",
+        "id": 85,
+        "points": -1
+      },
+      {
+        "abbr": "PAT",
+        "label": "Each PAT Made",
+        "id": 86,
+        "points": 1
+      },
+      {
+        "abbr": "PA35-45",
+        "label": "35-45 Points Allowed",
+        "id": 124,
+        "points": -3
+      },
+      {
+        "abbr": "YA350-399",
+        "label": "350-399 Yards Allowed",
+        "id": 132,
+        "points": -1
+      },
+      {
+        "abbr": "REY",
+        "label": "Receiving Yards",
+        "id": 42,
+        "points": 0.1
+      },
+      {
+        "abbr": "PATM",
+        "label": "Each PAT Missed",
+        "id": 88,
+        "points": -1
+      },
+      {
+        "abbr": "YA100-199",
+        "label": "100-199 Yards Allowed",
+        "id": 129,
+        "points": 3
+      },
+      {
+        "abbr": "PTD",
+        "label": "TD Pass",
+        "id": 4,
+        "points": 6
+      },
+      {
+        "abbr": "103",
+        "label": "interceptionReturnTouchdowns",
+        "id": 103,
+        "points": 6
+      },
+      {
+        "abbr": "YA200-299",
+        "label": "200-299 Yards Allowed",
+        "id": 130,
+        "points": 2
+      },
+      {
+        "abbr": "PA0",
+        "label": "0 Points Allowed",
+        "id": 89,
+        "points": 5
+      },
+      {
+        "abbr": "BLKKRTD",
+        "label": "Blocked Punt or FG return for TD",
+        "id": 93,
+        "points": 6
+      },
+      {
+        "abbr": "PA1-6",
+        "label": "1-6 Points Allowed",
+        "id": 90,
+        "points": 4
+      },
+      {
+        "abbr": "INT",
+        "label": "Each Interception",
+        "id": 95,
+        "points": 2
+      },
+      {
+        "abbr": "15",
+        "label": "passing40PlusYardTD",
+        "id": 15,
+        "points": 2
+      },
+      {
+        "abbr": "SF",
+        "label": "Each Safety",
+        "id": 98,
+        "points": 2
+      },
+      {
+        "abbr": "PA7-13",
+        "label": "7-13 Points Allowed",
+        "id": 91,
+        "points": 3
+      },
+      {
+        "abbr": "P300",
+        "label": "300-399 yard passing game",
+        "id": 17,
+        "points": 2
+      },
+      {
+        "abbr": "FR",
+        "label": "Each Fumble Recovered",
+        "id": 96,
+        "points": 2
+      },
+      {
+        "abbr": "BLKK",
+        "label": "Blocked Punt, PAT or FG",
+        "id": 97,
+        "points": 2
+      },
+      {
+        "abbr": "P2PT",
+        "label": "2pt Passing Conversion",
+        "id": 19,
+        "points": 2
+      },
+      {
+        "abbr": "INTT",
+        "label": "Interceptions Thrown",
+        "id": 20,
+        "points": -2
+      },
+      {
+        "abbr": "Unknown",
+        "label": "Unknown (statId 5)",
+        "id": 5,
+        "points": 0.25
+      },
+      {
+        "abbr": "63",
+        "label": "fumbleRecoveredForTD",
+        "id": 63,
+        "points": 6
+      },
+      {
+        "abbr": "FG0",
+        "label": "FG Made (under 40 yards)",
+        "id": 80,
+        "points": 3
+      },
+      {
+        "abbr": "R2PT",
+        "label": "2pt Rushing Conversion",
+        "id": 26,
+        "points": 2
+      },
+      {
+        "abbr": "FG40",
+        "label": "FG Made (40-49 yards)",
+        "id": 77,
+        "points": 4
+      },
+      {
+        "abbr": "PA14-17",
+        "label": "14-17 Points Allowed",
+        "id": 92,
+        "points": 1
+      },
+      {
+        "abbr": "SK",
+        "label": "Each Sack",
+        "id": 99,
+        "points": 1
+      },
+      {
+        "abbr": "35",
+        "label": "rushing40PlusYardTD",
+        "id": 35,
+        "points": 2
+      },
+      {
+        "abbr": "37",
+        "label": "rushing100To199YardGame",
+        "id": 37,
+        "points": 2
+      },
+      {
+        "abbr": "REC2PT",
+        "label": "2pt Receiving Conversion",
+        "id": 44,
+        "points": 2
+      },
+      {
+        "abbr": "45",
+        "label": "receiving40PlusYardTD",
+        "id": 45,
+        "points": 2
+      },
+      {
+        "abbr": "FG60",
+        "label": "FG Made (60+ yards)",
+        "id": 201,
+        "points": 5
+      },
+      {
+        "abbr": "57",
+        "label": "receiving200PlusYardGame",
+        "id": 57,
+        "points": 3
+      },
+      {
+        "abbr": "FG50",
+        "label": "FG Made (50-59 yards)",
+        "id": 198,
+        "points": 5
+      }
+    ],
+    "position_slot_counts": {
+      "QB": 1,
+      "TQB": 0,
+      "RB": 2,
+      "RB/WR": 0,
+      "WR": 2,
+      "WR/TE": 0,
+      "TE": 1,
+      "OP": 0,
+      "DT": 0,
+      "DE": 0,
+      "LB": 0,
+      "DL": 0,
+      "CB": 0,
+      "S": 0,
+      "DB": 0,
+      "DP": 0,
+      "D/ST": 1,
+      "K": 1,
+      "P": 0,
+      "HC": 0,
+      "BE": 6,
+      "IR": 1,
+      "SLOT_22": 0,
+      "RB/WR/TE": 2,
+      "ER": 0
+    },
+    "lineup_slots": [
+      {
+        "slot_id": 0,
+        "slot": "QB",
+        "eligible_positions": [
+          "QB"
+        ],
+        "type": "START",
+        "count": 1
+      },
+      {
+        "slot_id": 2,
+        "slot": "RB",
+        "eligible_positions": [
+          "RB"
+        ],
+        "type": "START",
+        "count": 2
+      },
+      {
+        "slot_id": 4,
+        "slot": "WR",
+        "eligible_positions": [
+          "WR"
+        ],
+        "type": "START",
+        "count": 2
+      },
+      {
+        "slot_id": 6,
+        "slot": "TE",
+        "eligible_positions": [
+          "TE"
+        ],
+        "type": "START",
+        "count": 1
+      },
+      {
+        "slot_id": 16,
+        "slot": "D/ST",
+        "eligible_positions": [
+          "D/ST"
+        ],
+        "type": "START",
+        "count": 1
+      },
+      {
+        "slot_id": 17,
+        "slot": "K",
+        "eligible_positions": [
+          "K"
+        ],
+        "type": "START",
+        "count": 1
+      },
+      {
+        "slot_id": 20,
+        "slot": "BE",
+        "eligible_positions": [],
+        "type": "BENCH",
+        "count": 6
+      },
+      {
+        "slot_id": 21,
+        "slot": "IR",
+        "eligible_positions": [],
+        "type": "IR",
+        "count": 1
+      },
+      {
+        "slot_id": 23,
+        "slot": "RB/WR/TE",
+        "eligible_positions": [
+          "RB",
+          "WR",
+          "TE"
+        ],
+        "type": "FLEX",
+        "count": 2
+      }
+    ]
+  }
+}
