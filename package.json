@@ -13,10 +13,14 @@
   },
   "scripts": {
     "start": "node src/index.js",
+    "start:stdio": "node src/index.js --transport=stdio",
+    "start:http": "node src/index.js --transport=streamable-http",
     "test": "node --test",
     "inspect": "npx @modelcontextprotocol/inspector node src/index.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/express": "^2.0.2",
+    "@modelcontextprotocol/node": "^2.1.1",
     "@modelcontextprotocol/server": "^2.0.0",
     "pdfkit": "^0.20.2",
     "zod": "^4.6.5"

@@ -3,7 +3,7 @@ import test from 'node:test';
 import { request as httpRequest } from 'node:http';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import { createServer } from '../src/server.js';
-import { startHttp } from '../src/transports/http.js';
+import { createHttpApp, startHttp } from '../src/transports/http.js';
 
 const config = {
   host: '127.0.0.1', port: 0,
@@ -113,6 +113,27 @@ test('shutdown drains an active tool and rejects excess concurrent work', async 
   assert.equal((await draining).forced, false);
 });
 
+test('healthz endpoint reports ready and draining status', async context => {
+  const { app, beginDrain } = createHttpApp(() => ({}), {
+    host: '127.0.0.1', token: 'test-token', allowedHosts: ['127.0.0.1']
+  });
+  const server = await new Promise((resolve, reject) => {
+    const s = app.listen(0, '127.0.0.1', () => resolve(s));
+    s.once('error', reject);
+  });
+  context.after(() => server.close());
+  const base = `http://127.0.0.1:${server.address().port}`;
+
+  const ready = await fetch(`${base}/healthz`);
+  assert.equal(ready.status, 200);
+  assert.deepEqual(await ready.json(), { status: 'ok' });
+
+  beginDrain();
+  const draining = await fetch(`${base}/healthz`);
+  assert.equal(draining.status, 503);
+  assert.deepEqual(await draining.json(), { status: 'draining' });
+});
+
 test('initialization and subsequent requests can reach different replicas', async context => {
   const first = await fixture(context);
   const second = await fixture(context);
@@ -161,4 +182,26 @@ test('shutdown deadline closes remaining connections', async context => {
   release();
   assert.equal(result.forced, true);
   await disconnected;
+});
+
+test('SIGTERM and SIGINT trigger graceful service draining and connection closure', async context => {
+  const client = { defaults: {}, get: async () => ({ healthy: true }) };
+  const injuryReportCache = new Map();
+  const service = await startHttp(() => createServer({ client, injuryReportCache }), { ...config, port: 0 });
+  context.after(() => service.close());
+  const base = `http://127.0.0.1:${service.httpServer.address().port}`;
+
+  let shutdownResult;
+  const shutdown = async () => {
+    shutdownResult = await service.close();
+  };
+  process.once('SIGTERM', shutdown);
+
+  assert.equal((await fetch(`${base}/healthz`)).status, 200);
+  process.emit('SIGTERM');
+
+  for (let attempt = 0; !shutdownResult && attempt < 100; attempt++) await nextTurn();
+  assert.ok(shutdownResult);
+  assert.equal(shutdownResult.forced, false);
+  await assert.rejects(fetch(`${base}/healthz`), /fetch failed|ECONNREFUSED/);
 });

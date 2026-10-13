@@ -6,12 +6,12 @@ import { registerPlayerTools } from './player-tools.js';
 import { registerRecapTools } from './recap-tools.js';
 import { registerTransactionTools } from './transaction-tools.js';
 
-export function registerAllTools(server, client) {
+export function registerAllTools(server, client, options = {}) {
   registerLeagueTools(server, client);
   registerMatchupTools(server, client);
   registerPlayerTools(server, client);
   registerTransactionTools(server, client);
-  registerAnalysisTools(server, client);
+  registerAnalysisTools(server, client, options);
   registerKnowledgeTools(server);
   registerRecapTools(server, client);
 }

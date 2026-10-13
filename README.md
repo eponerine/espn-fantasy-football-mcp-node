@@ -7,15 +7,15 @@ and exposes every route in that API's OpenAPI spec as an MCP tool, plus fantasy-
 domain knowledge and ready-made prompts for the questions managers actually ask.
 
 - Runtime: Node.js 22 LTS+
-- SDK: `@modelcontextprotocol/server` v2 (stdio transport)
+- SDK: `@modelcontextprotocol/server` v2 (stdio and Streamable HTTP transports)
 - Schemas: Zod v4
 - No build step — plain ESM JavaScript
 
 ## Architecture
 
 ```
-MCP host (VS Code / Claude / Cursor)
-        |  stdio (JSON-RPC)
+MCP host (VS Code / Claude / Cursor / Remote agent)
+        |  stdio (JSON-RPC) OR Streamable HTTP (POST /mcp)
         v
 espn-fantasy-football-mcp-node   <-- this repo
         |  HTTP (fetch)
@@ -43,10 +43,18 @@ cd ..\espn-fantasy-football-api-node
 npm start
 ```
 
-Then run the MCP server:
+### Running with stdio (Default)
+
+The default launch mode is `stdio`, preserving backward compatibility:
 
 ```powershell
 npm start
+```
+
+Or explicitly specify the transport via CLI:
+
+```powershell
+node src/index.js --transport=stdio
 ```
 
 It waits on stdin — that is correct for stdio servers. To poke at it interactively:
@@ -55,7 +63,97 @@ It waits on stdin — that is correct for stdio servers. To poke at it interacti
 npm run inspect
 ```
 
+### Running with Streamable HTTP
+
+Streamable HTTP exposes an authenticated HTTP MCP service on `/mcp`.
+
+Start HTTP using CLI arguments (CLI options take precedence over environment variables):
+
+```powershell
+node src/index.js --transport=streamable-http --host=127.0.0.1 --port=3001
+```
+
+Or via environment variables:
+
+```powershell
+$env:MCP_TRANSPORT = "streamable-http"
+$env:MCP_HOST = "127.0.0.1"
+$env:MCP_PORT = "3001"
+$env:MCP_AUTH_TOKEN = "your-secure-token"
+$env:MCP_ALLOWED_HOSTS = "localhost,127.0.0.1"
+npm start
+```
+
+Or using the npm script shortcut:
+
+```powershell
+npm run start:http
+```
+
+For local development without manual token setup, a helper script is available:
+
+```powershell
+node scripts/start-local-http.js
+```
+
+This helper generates an ephemeral token if `MCP_AUTH_TOKEN` is unset and binds to loopback (or respects caller-provided `MCP_HOST`, `MCP_PORT`, and `MCP_ALLOWED_HOSTS`).
+
+#### HTTP Endpoints and Security
+
+- **MCP Endpoint**: `POST /mcp` — handles streamable JSON-RPC requests. Requires the `Authorization: Bearer <MCP_AUTH_TOKEN>` header and a matching `Host` header listed in `MCP_ALLOWED_HOSTS`. Non-POST requests return `405 Method Not Allowed`.
+- **Health & Readiness Check**: `GET /healthz` — unauthenticated probe that returns `200` with `{"status":"ok"}` when healthy and accepting requests, and `503` with `{"status":"draining"}` during shutdown.
+- **Security Protections**: HTTP mode requires `MCP_AUTH_TOKEN` and `MCP_ALLOWED_HOSTS`. If either is missing, the server fails immediately at startup with an informative error rather than silently disabling authentication. Optional `MCP_ALLOWED_ORIGINS` restricts browser CORS origins.
+- **Host Binding**: Set `--host` or `MCP_HOST` to `127.0.0.1` for local loopback (default) or `0.0.0.0` for containerized environments.
+- **Graceful Shutdown**: On `SIGTERM` or `SIGINT`, the HTTP server immediately enters draining mode (`/healthz` returns `503`), stops accepting new connections, drains existing in-flight tool requests, and closes idle keep-alive connections. Active requests are allowed up to `MCP_SHUTDOWN_TIMEOUT_MS` (default 55s) before connections are closed.
+
+### Container Deployment
+
+When running this server as a container service alongside your fantasy API:
+
+1. **Container Command**: `node src/index.js`
+2. **Required Environment Variables**:
+   - `MCP_TRANSPORT=streamable-http`
+   - `MCP_HOST=0.0.0.0` (binds all container interfaces)
+   - `MCP_PORT=3001`
+   - `MCP_AUTH_TOKEN=<your-token>` (required bearer token)
+   - `MCP_ALLOWED_HOSTS=<service-name>,localhost,127.0.0.1` (accepted `Host` headers)
+   - `FF_API_BASE_URL=http://<api-service>:3000`
+3. **Container Runtime Recommendations**:
+   - Enable init process (`init: true` in Compose or `docker run --init`) so Node.js receives `SIGTERM` and `SIGINT` signals properly.
+   - Set container stop grace period to at least `60s` (`stop_grace_period: 60s`) so the default 55-second draining deadline can finish in-flight tool executions before `SIGKILL`.
+   - Add a healthcheck targeting `GET /healthz`:
+     ```yaml
+     healthcheck:
+       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.MCP_PORT||3001)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+       interval: 30s
+       timeout: 5s
+       retries: 3
+       start_period: 10s
+     ```
+
+Example Compose service definition:
+
+```yaml
+services:
+  fantasy-mcp:
+    build: .
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 60s
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: "3001"
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:?Set MCP_AUTH_TOKEN}
+      MCP_ALLOWED_HOSTS: fantasy-mcp,localhost,127.0.0.1
+      FF_API_BASE_URL: http://fantasy-api:3000
+    expose:
+      - "3001"
+```
+
 ## Configuration
+
+### Upstream Fantasy API
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
@@ -66,6 +164,19 @@ npm run inspect
 | `SWID` | — | Private-league cookie. Prefer setting this on the API server instead. |
 | `FF_API_TIMEOUT_MS` | `20000` | Per-request timeout. |
 | `FF_CACHE_TTL_MS` | `60000` | TTL for the in-memory response cache. |
+
+### MCP Runtime & Transport
+
+| Variable | CLI Option | Default | Purpose |
+| --- | --- | --- | --- |
+| `MCP_TRANSPORT` | `--transport` | `stdio` | Transport type: `stdio` or `streamable-http`. CLI takes precedence. |
+| `MCP_HOST` | `--host` | `127.0.0.1` | Bind host for HTTP mode. Use `0.0.0.0` for containers. |
+| `MCP_PORT` | `--port` | `3001` | Listen port for HTTP mode. |
+| `MCP_AUTH_TOKEN` | — | — | Required bearer token for `/mcp` in HTTP mode. |
+| `MCP_ALLOWED_HOSTS` | — | — | Required comma-separated hostnames accepted in `Host` header. |
+| `MCP_ALLOWED_ORIGINS` | — | — | Optional comma-separated allowed browser origins for CORS. |
+| `MCP_SHUTDOWN_TIMEOUT_MS` | — | `55000` | Grace period in milliseconds to drain requests during shutdown. |
+| `MCP_MAX_CONCURRENT_REQUESTS` | — | `16` | Maximum concurrent in-flight HTTP requests before returning 503. |
 
 Environment variables are read from the process environment. Set them in your MCP client
 config (see `.vscode/mcp.json`) or export them in the shell — this server does not read

@@ -33,3 +33,17 @@ test('stdio entrypoint initializes and lists all registrations with JSON-only st
   assert.equal((await exited)[0], 0);
   assert.match(stderr, /on stdio/);
 });
+
+test('default launch selects stdio without arguments or environment configuration', { timeout: 5000 }, async context => {
+  const env = { ...process.env };
+  delete env.MCP_TRANSPORT;
+  const child = spawn(process.execPath, [fileURLToPath(new URL('../src/index.js', import.meta.url))],
+    { env, stdio: ['pipe', 'pipe', 'pipe'] });
+  context.after(() => { if (child.exitCode === null) child.kill(); });
+  const exited = once(child, 'exit');
+  let stderr = '';
+  child.stderr.on('data', chunk => { stderr += chunk; });
+  child.stdin.end();
+  assert.equal((await exited)[0], 0);
+  assert.match(stderr, /on stdio/);
+});
