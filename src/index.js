@@ -1,56 +1,57 @@
 #!/usr/bin/env node
-import { McpServer } from '@modelcontextprotocol/server';
-import { serveStdio } from '@modelcontextprotocol/server/stdio';
+import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import { FantasyApiClient } from './api-client.js';
 import { loadConfig } from './config.js';
-import { registerPrompts } from './prompts/index.js';
-import { registerResources } from './resources/index.js';
-import { registerAllTools } from './tools/index.js';
+import { loadRuntimeConfig } from './runtime-config.js';
+import { createServer } from './server.js';
 
-const SERVER_INSTRUCTIONS = `This server answers questions about an ESPN fantasy football league by
-calling a local HTTP API wrapper around ESPN's fantasy endpoints.
+try {
+  const upstream = loadConfig();
+  const runtime = loadRuntimeConfig();
+  const client = new FantasyApiClient(upstream);
+  const injuryReportCache = new Map();
+  const factory = () => createServer({ client, injuryReportCache });
 
-Start with get_league_profile. It returns the current week plus the league's rules translated into
-plain English: scoring format, the exact starting lineup (how many FLEX slots, superflex or not),
-bench and IR counts, waiver/FAAB mechanics and playoff structure. Player value depends entirely on
-those rules, so never assume a standard league.
+  if (runtime.transport === 'stdio') {
+    // stdout is the JSON-RPC channel; all logging must go to stderr.
+    console.error(
+      `espn-fantasy-football MCP server on stdio -> ${upstream.baseUrl}` +
+        (upstream.defaultLeagueId
+          ? ` (league ${upstream.defaultLeagueId}, ${upstream.defaultYear ?? 'no year set'})`
+          : ' (no default league configured)')
+    );
+    const server = factory();
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    const stop = () => {
+      void server.close().catch(() => {
+        process.exitCode = 1;
+      });
+    };
+    process.once('SIGTERM', stop);
+    process.once('SIGINT', stop);
+  } else if (runtime.transport === 'streamable-http') {
+    const { startHttp } = await import('./transports/http.js');
+    const service = await startHttp(factory, runtime);
+    console.error(
+      `espn-fantasy-football MCP server on streamable-http -> http://${runtime.host}:${runtime.port}/mcp`
+    );
 
-Resolve team names to numeric ids with get_teams before calling get_roster or check_lineup. For
-anything lineup-related, call check_lineup: it validates slots, byes, injuries and IR legality
-against the league's real settings.
-
-Two data traps worth remembering: a roster player's projected_points and total_points are SEASON
-figures, not weekly (use get_box_scores with includeLineup=true for weekly projections); and
-active_status reads as 'bye' for everyone before kickoff, so use on_bye_week and injury_status for
-availability instead.
-
-If you are unsure which tools a question needs, call how_to_answer; if the fantasy jargon is
-unfamiliar, call explain_fantasy_football.
-
-All tools are read-only. Data is limited to this league plus ESPN's own projections; it contains
-no injury news, weather or outside expert rankings, so do not invent them.`;
-
-function createServer() {
-  const config = loadConfig();
-  const client = new FantasyApiClient(config);
-
-  const server = new McpServer(
-    { name: 'espn-fantasy-football', version: '0.1.0' },
-    { instructions: SERVER_INSTRUCTIONS }
-  );
-
-  registerAllTools(server, client);
-  registerResources(server, client);
-  registerPrompts(server);
-
-  return server;
+    const shutdown = async () => {
+      try {
+        const result = await service.close();
+        if (result?.forced) {
+          process.exitCode = 1;
+        }
+      } catch (error) {
+        console.error(`Error during HTTP shutdown: ${error?.message ?? error}`);
+        process.exitCode = 1;
+      }
+    };
+    process.once('SIGTERM', shutdown);
+    process.once('SIGINT', shutdown);
+  }
+} catch (error) {
+  console.error(error?.message ?? String(error));
+  process.exitCode = 1;
 }
-
-const config = loadConfig();
-// stdout is the JSON-RPC channel; all logging must go to stderr.
-console.error(
-  `espn-fantasy-football MCP server on stdio -> ${config.baseUrl}` +
-    (config.defaultLeagueId ? ` (league ${config.defaultLeagueId}, ${config.defaultYear ?? 'no year set'})` : ' (no default league configured)')
-);
-
-void serveStdio(createServer);

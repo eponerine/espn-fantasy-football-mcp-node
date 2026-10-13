@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildUrl, redactUrl } from '../src/api-client.js';
+import { FantasyApiClient, buildUrl, redactUrl } from '../src/api-client.js';
 import { loadConfig } from '../src/config.js';
 
 test('buildUrl skips empty params and joins paths', () => {
@@ -46,4 +46,28 @@ test('loadConfig falls back to defaults', () => {
   assert.equal(config.baseUrl, 'http://localhost:3000');
   assert.equal(config.defaultLeagueId, null);
   assert.equal(config.timeoutMs, 20_000);
+});
+
+test('API client can leave league scope and ESPN cookies to the configured API server', async () => {
+  const client = new FantasyApiClient({
+    baseUrl: 'http://localhost:3000',
+    defaultLeagueId: 123456,
+    defaultYear: 2026,
+    espnS2: 'secret-cookie',
+    swid: '{secret-id}',
+    timeoutMs: 1000,
+    cacheTtlMs: 1000
+  });
+  const originalFetch = globalThis.fetch;
+  let requestedUrl;
+  globalThis.fetch = async (url) => {
+    requestedUrl = new URL(url);
+    return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  try {
+    await client.get('/league', {}, { useConfiguredScope: false });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.equal(requestedUrl.search, '');
 });

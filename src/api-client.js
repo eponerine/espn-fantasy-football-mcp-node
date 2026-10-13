@@ -51,16 +51,18 @@ export class FantasyApiClient {
    * Fills in league scope from env and attaches ESPN cookies when this process
    * is the one holding them.
    */
-  #resolveParams(params) {
+  #resolveParams(params, useConfiguredScope) {
     const resolved = { ...params };
-    if (resolved.leagueId == null && this.#config.defaultLeagueId != null) {
-      resolved.leagueId = this.#config.defaultLeagueId;
+    if (useConfiguredScope) {
+      if (resolved.leagueId == null && this.#config.defaultLeagueId != null) {
+        resolved.leagueId = this.#config.defaultLeagueId;
+      }
+      if (resolved.year == null && this.#config.defaultYear != null) {
+        resolved.year = this.#config.defaultYear;
+      }
+      if (this.#config.espnS2) resolved.espnS2 = this.#config.espnS2;
+      if (this.#config.swid) resolved.swid = this.#config.swid;
     }
-    if (resolved.year == null && this.#config.defaultYear != null) {
-      resolved.year = this.#config.defaultYear;
-    }
-    if (this.#config.espnS2) resolved.espnS2 = this.#config.espnS2;
-    if (this.#config.swid) resolved.swid = this.#config.swid;
     return resolved;
   }
 
@@ -84,8 +86,8 @@ export class FantasyApiClient {
    * Every upstream request re-fetches the whole league from ESPN, so identical
    * requests are served from a short-lived cache.
    */
-  async get(path, params = {}, { useCache = true } = {}) {
-    const url = buildUrl(this.#config.baseUrl, path, this.#resolveParams(params));
+  async get(path, params = {}, { useCache = true, useConfiguredScope = true } = {}) {
+    const url = buildUrl(this.#config.baseUrl, path, this.#resolveParams(params, useConfiguredScope));
     const cacheKey = url.toString();
     const safeUrl = redactUrl(url);
 

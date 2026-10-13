@@ -4,6 +4,7 @@ ENV NODE_ENV=production MCP_TRANSPORT=streamable-http MCP_HOST=0.0.0.0 MCP_PORT=
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --chown=node:node src ./src
+COPY --chown=node:node recap ./recap
 USER node
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

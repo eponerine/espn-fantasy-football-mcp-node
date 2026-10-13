@@ -1,0 +1,148 @@
+{
+  "teams": [
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "team_abbrev": "GEO",
+      "wins": 6,
+      "losses": 2,
+      "ties": 0,
+      "points_for": 643.8,
+      "points_against": 576.6,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 2,
+      "team_name": "THE RETIRED GUY",
+      "team_abbrev": "COST",
+      "wins": 6,
+      "losses": 2,
+      "ties": 0,
+      "points_for": 623.9,
+      "points_against": 607.5,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 3,
+      "team_name": "Boogie Suckers ",
+      "team_abbrev": "Bs ",
+      "wins": 6,
+      "losses": 2,
+      "ties": 0,
+      "points_for": 631.15,
+      "points_against": 484.1,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 4,
+      "team_name": "Joseph's Scary Team",
+      "team_abbrev": "JST",
+      "wins": 5,
+      "losses": 3,
+      "ties": 0,
+      "points_for": 581.4499999999999,
+      "points_against": 552.6,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 5,
+      "team_name": "Christian Mingle",
+      "team_abbrev": "PRAY",
+      "wins": 4,
+      "losses": 4,
+      "ties": 0,
+      "points_for": 524.15,
+      "points_against": 577.85,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 6,
+      "team_name": "Doo Doo Baby",
+      "team_abbrev": "BBY",
+      "wins": 2,
+      "losses": 6,
+      "ties": 0,
+      "points_for": 487.75,
+      "points_against": 600.55,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 7,
+      "team_name": "Red Pandas",
+      "team_abbrev": "PAND",
+      "wins": 2,
+      "losses": 6,
+      "ties": 0,
+      "points_for": 456.2,
+      "points_against": 516.6,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 8,
+      "team_name": "Chargin' Chucks",
+      "team_abbrev": "CHRG",
+      "wins": 7,
+      "losses": 1,
+      "ties": 0,
+      "points_for": 560.15,
+      "points_against": 505.75,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 9,
+      "team_name": "3kids and a horse ",
+      "team_abbrev": "Gus",
+      "wins": 6,
+      "losses": 2,
+      "ties": 0,
+      "points_for": 577.3,
+      "points_against": 520.85,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "team_abbrev": "3",
+      "wins": 2,
+      "losses": 6,
+      "ties": 0,
+      "points_for": 494,
+      "points_against": 525.85,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 11,
+      "team_name": "NABERHOOD WATCH",
+      "team_abbrev": "JAvS",
+      "wins": 2,
+      "losses": 6,
+      "ties": 0,
+      "points_for": 540.7,
+      "points_against": 525.35,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    },
+    {
+      "team_id": 12,
+      "team_name": "Football and Crabcakes ",
+      "team_abbrev": "CaF",
+      "wins": 0,
+      "losses": 8,
+      "ties": 0,
+      "points_for": 455.9,
+      "points_against": 582.85,
+      "division_id": 0,
+      "division_name": "New Jersey"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "rankings": [
+    {
+      "power_score": 30,
+      "team_id": 2,
+      "team_name": "THE RETIRED GUY"
+    },
+    {
+      "power_score": 27.9,
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes"
+    },
+    {
+      "power_score": 26.95,
+      "team_id": 8,
+      "team_name": "Chargin' Chucks"
+    },
+    {
+      "power_score": 24.65,
+      "team_id": 9,
+      "team_name": "3kids and a horse "
+    },
+    {
+      "power_score": 23.5,
+      "team_id": 3,
+      "team_name": "Boogie Suckers "
+    },
+    {
+      "power_score": 22.95,
+      "team_id": 5,
+      "team_name": "Christian Mingle"
+    },
+    {
+      "power_score": 21.85,
+      "team_id": 4,
+      "team_name": "Joseph's Scary Team"
+    },
+    {
+      "power_score": 21.35,
+      "team_id": 11,
+      "team_name": "NABERHOOD WATCH"
+    },
+    {
+      "power_score": 21.1,
+      "team_id": 10,
+      "team_name": "Hot Toddy"
+    },
+    {
+      "power_score": 19.1,
+      "team_id": 6,
+      "team_name": "Doo Doo Baby"
+    },
+    {
+      "power_score": 14.85,
+      "team_id": 7,
+      "team_name": "Red Pandas"
+    },
+    {
+      "power_score": 14.3,
+      "team_id": 12,
+      "team_name": "Football and Crabcakes "
+    }
+  ]
+}

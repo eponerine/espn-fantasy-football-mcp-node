@@ -5,6 +5,7 @@ import { buildInjuryReport, isHealthy, rankTopPlayers } from '../domain/injury-r
 import { jsonResult, leagueScope, READ_ONLY, safeHandler, teamIdParam } from './shared.js';
 
 const INJURY_REPORT_TTL_MS = 30 * 60 * 1000;
+const INJURY_REPORT_MAX_CACHE_SIZE = 200;
 const PLAYER_CARD_CONCURRENCY = 4;
 
 // Each upstream call rebuilds the league from ESPN, so cap how many run at once.
@@ -21,9 +22,7 @@ async function mapWithConcurrency(items, limit, fn) {
   return results;
 }
 
-export function registerAnalysisTools(server, client) {
-  const injuryReportCache = new Map();
-
+export function registerAnalysisTools(server, client, { injuryReportCache = new Map() } = {}) {
   server.registerTool(
     'get_league_profile',
     {
@@ -131,8 +130,17 @@ export function registerAnalysisTools(server, client) {
     },
     safeHandler(async (args) => {
       const { leagueId, year, week, topN = 100, refresh = false } = args;
-      const scope = { leagueId, year };
-      const cacheKey = JSON.stringify({ ...client.defaults, ...scope, week, topN });
+      const resolvedLeagueId = leagueId ?? client.defaults?.leagueId;
+      const resolvedYear = year ?? client.defaults?.year;
+      const scope = {
+        ...(resolvedLeagueId != null ? { leagueId: resolvedLeagueId } : {}),
+        ...(resolvedYear != null ? { year: resolvedYear } : {})
+      };
+      const cacheKey = JSON.stringify({ leagueId: resolvedLeagueId ?? null, year: resolvedYear ?? null, week, topN });
+
+      for (const [key, value] of injuryReportCache) {
+        if (value.expiresAt <= Date.now()) injuryReportCache.delete(key);
+      }
 
       const cached = injuryReportCache.get(cacheKey);
       if (!refresh && cached && cached.expiresAt > Date.now()) {
@@ -168,6 +176,10 @@ export function registerAnalysisTools(server, client) {
       });
 
       injuryReportCache.set(cacheKey, { report, expiresAt: Date.now() + INJURY_REPORT_TTL_MS });
+      while (injuryReportCache.size > INJURY_REPORT_MAX_CACHE_SIZE) {
+        const oldestKey = injuryReportCache.keys().next().value;
+        injuryReportCache.delete(oldestKey);
+      }
       return jsonResult(report);
     })
   );

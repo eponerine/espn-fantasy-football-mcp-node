@@ -1,5 +1,6 @@
 import * as z from 'zod/v4';
 import { ANSWERING_RULES } from '../domain/playbook.js';
+import { WEEKLY_RECAP_SPEC } from './weekly-recap-spec.js';
 
 // MCP prompt arguments arrive as strings, so every argsSchema field is a string.
 const optionalString = (description) => z.string().optional().describe(description);
@@ -16,6 +17,16 @@ function withRules(body) {
 }
 
 export function registerPrompts(server) {
+  server.registerPrompt(
+    'weekly_recap',
+    {
+      title: 'Deterministic weekly recap format',
+      description: 'Write a weekly recap using only the validated get_recap_data output.',
+      argsSchema: z.object({})
+    },
+    () => ({ messages: [userMessage(WEEKLY_RECAP_SPEC)] })
+  );
+
   server.registerPrompt(
     'start-sit',
     {
