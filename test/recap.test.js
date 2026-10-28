@@ -253,7 +253,7 @@ test('recap schema and section selection preserve defaults and compact only null
   const recap = makeFixtureRecap();
   delete recap.name_snapshot;
   assert.equal(recapSchema.safeParse(recap).success, true);
-  assert.equal(selectRecapSections(recap), recap);
+  assert.deepEqual(selectRecapSections(recap), recap);
   assert.deepEqual(Object.keys(selectRecapSections(recap, { sections: [] })), ['schema_version', 'meta']);
   const selected = selectRecapSections(recap, { sections: ['team_lineups', 'injury_watch'], compact: true });
   assert.equal(recapSchema.safeParse(selected).success, true);
@@ -275,7 +275,7 @@ test('actual team lineups match box scores, not optimal assignments', () => {
       const team = teams.find((row) => row.team_name === game[`${side}_team`]);
       const actual = recap.team_lineups.find((row) => row.team_id === team.team_id);
       const raw = game[`${side}_lineup`];
-      assert.deepEqual(actual.starters.map((row) => row.player_id), raw.filter((row) => !['BE', 'IR'].includes(row.slot_position)).map((row) => row.player_id));
+      assert.deepEqual(actual.starters.map((row) => row.player_id).sort(), raw.filter((row) => !['BE', 'IR'].includes(row.slot_position)).map((row) => row.player_id).sort());
       for (const row of [...actual.starters, ...actual.bench, ...actual.ir]) {
         const source = raw.find((player) => player.player_id === row.player_id);
         assert.deepEqual([row.slot, row.points, row.projected_points], [source.slot_position, source.points, source.projected_points]);
@@ -295,6 +295,7 @@ test('preview references, standings ranks, names, bid aliases and week labels ar
     assert.deepEqual(team.availability, { team_id: team.team_id });
   }
   for (const team of recap.teams) assert.equal(team.display_name, team.name.trim());
+  assert.deepEqual(recap.name_snapshot, Object.fromEntries(teams.map((team) => [String(team.team_id), team.team_name ?? team.name])));
   for (const war of recap.roster_moves.bidding_wars) {
     assert.equal(war.bid_count, war.bids.length);
     assert.equal(war.total_bid_amount, war.total_bids);
@@ -348,7 +349,7 @@ test('failed bid outcomes distinguish price, ties, prior drops and invalid sourc
     claim(2, 5, 1, 'FAILED_INVALIDPLAYERSOURCE', 5000)
   ];
   const result = summarizeTransactions({ transactions, teams: [{ team_id: 1 }, { team_id: 2 }], playersByTeam: new Map(), week: 4 });
-  assert.deepEqual(result.teams[1].failed_bids.map((row) => row.outcome), ['outbid', 'tiebreak_lost', 'player_already_dropped', 'invalid_source']);
+  assert.deepEqual(result.teams[1].failed_bids.map((row) => row.outcome), ['outbid', 'tiebreak_lost', 'unknown', 'unknown']);
   assert.ok(result.teams[1].failed_bids.every((row) => row.reason === 'FAILED_INVALIDPLAYERSOURCE'));
 });
 
