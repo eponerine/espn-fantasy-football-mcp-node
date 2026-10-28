@@ -17,6 +17,11 @@ export function dedupeTransactions(transactions = []) {
     const current = rowsByKey.get(key);
     const rank = preferredStatus[transaction.status] ?? 0;
     const currentRank = preferredStatus[current?.status] ?? -1;
+    if (current?.status === 'EXECUTED' && transaction.status === 'EXECUTED'
+      && Number(current.date) !== Number(transaction.date)) {
+      rowsByKey.set(`${key}|${transaction.date}`, transaction);
+      continue;
+    }
     if (!current || rank > currentRank || (rank === currentRank && Number(transaction.date) > Number(current.date))) {
       rowsByKey.set(key, transaction);
     }
@@ -26,6 +31,31 @@ export function dedupeTransactions(transactions = []) {
 
 export function summarizeTransactions({ transactions, teams, playersByTeam, week }) {
   const clean = dedupeTransactions(transactions);
+  const acquisitions = new Map();
+  for (const transaction of [...clean].sort((left, right) => Number(left.date) - Number(right.date))) {
+    const add = addedItem(transaction);
+    if (transaction.status !== 'EXECUTED' || !add) continue;
+    if (!acquisitions.has(add.playerId)) acquisitions.set(add.playerId, []);
+    acquisitions.get(add.playerId).push(transaction);
+  }
+  const winnerFor = (transaction) => clean.find((candidate) =>
+    candidate.status === 'EXECUTED' && candidate.type === 'WAIVER'
+    && addedItem(candidate)?.playerId === addedItem(transaction)?.playerId
+    && (candidate.scoring_period ?? week) === (transaction.scoring_period ?? week)
+    && Math.floor(Number(candidate.date) / 1000) === Math.floor(Number(transaction.date) / 1000));
+  const outcomeFor = (transaction) => {
+    const drop = droppedItem(transaction);
+    if (drop && clean.some((candidate) => candidate.status === 'EXECUTED'
+      && candidate.team_id === transaction.team_id && Number(candidate.date) < Number(transaction.date)
+      && droppedItem(candidate)?.playerId === drop.playerId)) return 'player_already_dropped';
+    const winner = winnerFor(transaction);
+    if (winner && Number(winner.bid_amount) > Number(transaction.bid_amount)) return 'outbid';
+    if (winner && winner.team_id !== transaction.team_id
+      && Number(winner.bid_amount) === Number(transaction.bid_amount)) return 'tiebreak_lost';
+    if (transaction.status === 'FAILED_INVALIDPLAYERSOURCE') return 'invalid_source';
+    if (transaction.status === 'FAILED_ROSTERLIMIT') return 'roster_limit';
+    return 'unknown';
+  };
   const teamById = new Map(teams.map((team) => [team.team_id, team]));
   const summaries = new Map(teams.map((team) => [team.team_id, {
     team_id: team.team_id,
@@ -50,6 +80,7 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
       summary.faab_spent += bid;
       if (drop) summary.drops.push({ player_id: drop.playerId, player: drop.player });
       if (add) {
+        const history = acquisitions.get(add.playerId);
         const player = (playersByTeam.get(transaction.team_id) ?? []).find((entry) => entry.player_id === add.playerId);
         const started = player ? !['BE', 'IR'].includes(player.lineup_slot ?? player.slot_position) : null;
         const claim = {
@@ -60,7 +91,9 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
           week_points: player?.points == null ? null : Number(player.points),
           lineup_status: started == null ? null : started ? 'started' : 'sat',
           prior_week_points: null,
-          transaction_type: transaction.type
+          transaction_type: transaction.type,
+          acquired_order: history.indexOf(transaction) + 1,
+          acquired_at: transaction.date ?? null
         };
         summary.executed_claims.push(claim);
         if (transaction.type === 'FREEAGENT') summary.free_agent_adds.push({ player_id: add.playerId, player: add.player });
@@ -72,7 +105,9 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
         player: add.player,
         bid,
         reason: transaction.status,
-        winner: null
+        outcome: outcomeFor(transaction),
+        winner: teamById.get(winnerFor(transaction)?.team_id)?.team_name
+          ?? teamById.get(winnerFor(transaction)?.team_id)?.name ?? null
       });
     }
   }
@@ -106,14 +141,12 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
       winner_team_id: winnerBid?.team_id ?? null,
       winning_bid: winnerBid?.bid ?? null,
       total_bids: war.bids.reduce((total, bid) => total + bid.bid, 0),
+      total_bid_amount: war.bids.reduce((total, bid) => total + bid.bid, 0),
+      bid_count: war.bids.length,
       winner_points: winnerPlayer?.points == null ? null : Number(winnerPlayer.points)
     });
   }
   for (const summary of summaries.values()) {
-    for (const failed of summary.failed_bids) {
-      const war = biddingWars.find((entry) => entry.player_id === failed.player_id);
-      failed.winner = war?.winner ?? null;
-    }
     summary.faab_spent = fromCents(toCents(summary.faab_spent));
     summary.faab_bid = fromCents(toCents(summary.faab_bid));
     summary.faab_lost = fromCents(toCents(summary.faab_lost));

@@ -3,6 +3,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as z from 'zod/v4';
 import { buildRecapData } from '../../recap/build.js';
+import { RECAP_SECTIONS, selectRecapSections } from '../../recap/payload.js';
+import { getRecapSchema } from '../../recap/schema.js';
 import { jsonResult, READ_ONLY, safeHandler } from './shared.js';
 
 const TEAM_NAME_CACHE = process.env.RECAP_TEAM_NAME_CACHE
@@ -30,7 +32,8 @@ function collection(payload, key) {
 }
 
 export function createRecapHandler(client) {
-  return async function getRecapData({ week: requestedWeek, include_preview: includePreview = true } = {}) {
+  return async function getRecapData({ week: requestedWeek, include_preview: includePreview = true, sections, compact = false } = {}) {
+    if (sections?.some((section) => !RECAP_SECTIONS.includes(section))) throw new Error('Unknown recap section.');
     const requestCache = new Map();
     const get = (path, params = {}) => {
       const key = `${path}?${new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)])).toString()}`;
@@ -59,11 +62,12 @@ export function createRecapHandler(client) {
       .map((scoringWeek) => get('/box-scores', { week: scoringWeek, includeLineup: true })));
     const nextWeek = week + 1;
     const rosterResponses = await Promise.all(teams.map((team) => get('/roster', { teamId: team.team_id, week: nextWeek })));
-    const [transactionPayload, previewPayload, powerPayload, priorPowerPayload] = await Promise.all([
+    const [transactionPayload, previewPayload, powerPayload, priorPowerPayload, pendingPayload] = await Promise.all([
       get('/transactions', { scoringPeriod: week }),
       includePreview ? get('/matchups', { week: nextWeek }) : Promise.resolve(null),
       get('/power-rankings', { week }),
-      week > 1 ? get('/power-rankings', { week: week - 1 }) : Promise.resolve(null)
+      week > 1 ? get('/power-rankings', { week: week - 1 }) : Promise.resolve(null),
+      get('/transactions', { scoringPeriod: nextWeek })
     ]);
     const matchupsArePlayoffs = collection(boxScoresByWeek.at(-1), 'box_scores').some((matchup) => matchup.is_playoff);
     const regularSeason = week <= regularSeasonWeeks && !matchupsArePlayoffs;
@@ -79,6 +83,7 @@ export function createRecapHandler(client) {
       boxScoresByWeek,
       rosterResponses,
       transactions: collection(transactionPayload, 'transactions'),
+      pendingTransactions: collection(pendingPayload, 'transactions'),
       previewMatchups: collection(previewPayload, 'matchups'),
       espnPowerRankings: powerPayload,
       espnPriorPowerRankings: priorPowerPayload,
@@ -89,18 +94,24 @@ export function createRecapHandler(client) {
     const retained = Object.fromEntries(retainedWeeks.map((snapshotWeek) => [String(snapshotWeek), leagueSnapshots[String(snapshotWeek)]]));
     await writeNameSnapshots({ ...snapshots, [scopeKey]: retained });
     delete recap.name_snapshot;
-    return recap;
+    return selectRecapSections(recap, { sections, compact });
   };
 }
 
 const weekSchema = z.number().int().min(1).optional();
 const recapInput = z.object({
   week: weekSchema,
-  include_preview: z.boolean().optional().default(true)
+  include_preview: z.boolean().optional().default(true),
+  sections: z.array(z.enum(RECAP_SECTIONS)).optional().describe('Top-level sections to return; meta and schema_version are always retained.'),
+  compact: z.boolean().optional().default(false).describe('Omit null-valued object fields recursively; preserve all numeric values and arrays.')
 });
 
 export function registerRecapTools(server, client) {
   const handler = createRecapHandler(client);
+  server.registerTool('get_recap_schema', {
+    title: 'Recap JSON schema', description: 'Return the versioned recap payload JSON schema, section names and field semantics.',
+    inputSchema: z.object({}), annotations: READ_ONLY
+  }, safeHandler(async () => jsonResult(getRecapSchema())));
   server.registerTool(
     'get_recap_data',
     {

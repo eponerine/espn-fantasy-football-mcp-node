@@ -4,6 +4,10 @@ import test from 'node:test';
 import { buildRecapData } from '../recap/build.js';
 import { solveOptimalLineup } from '../recap/lineups.js';
 import { analyzePlayers } from '../recap/players.js';
+import { buildRosterDetails, RECAP_SECTIONS, selectRecapSections } from '../recap/payload.js';
+import { getRecapSchema, recapSchema } from '../recap/schema.js';
+import { summarizeTransactions } from '../recap/transactions.js';
+import { buildAvailability } from '../recap/availability.js';
 import { calculateWeekScoring } from '../recap/scoring.js';
 import { calculateStandings } from '../recap/standings.js';
 import { validateRecap } from '../recap/validate.js';
@@ -243,4 +247,128 @@ test('missing projections are omitted from duds instead of treated as zero', () 
   });
   assert.equal(result.studs[0].projection_delta, null);
   assert.deepEqual(result.duds, []);
+});
+
+test('recap schema and section selection preserve defaults and compact only null fields', () => {
+  const recap = makeFixtureRecap();
+  delete recap.name_snapshot;
+  assert.equal(recapSchema.safeParse(recap).success, true);
+  assert.equal(selectRecapSections(recap), recap);
+  assert.deepEqual(Object.keys(selectRecapSections(recap, { sections: [] })), ['schema_version', 'meta']);
+  const selected = selectRecapSections(recap, { sections: ['team_lineups', 'injury_watch'], compact: true });
+  assert.equal(recapSchema.safeParse(selected).success, true);
+  assert.equal('scoreboard' in selected, false);
+  assert.throws(() => selectRecapSections(recap, { sections: ['bogus'] }), /Unknown/);
+  assert.deepEqual(selectRecapSections({ absent: null, zero: 0, flag: false, rows: [null, { absent: null }] }, { compact: true }),
+    { zero: 0, flag: false, rows: [null, {}] });
+  assert.deepEqual(getRecapSchema()['x-sections'], RECAP_SECTIONS);
+  const tools = new Map();
+  registerAllTools({ registerTool: (name, schema, handler) => tools.set(name, { schema, handler }) }, { defaults: {} });
+  assert.ok(tools.has('get_recap_schema'));
+  assert.equal(tools.get('get_recap_data').schema.inputSchema.safeParse({ sections: ['bogus'] }).success, false);
+});
+
+test('actual team lineups match box scores, not optimal assignments', () => {
+  const recap = makeFixtureRecap();
+  for (const game of boxScoresByWeek[3].box_scores) {
+    for (const side of ['home', 'away']) {
+      const team = teams.find((row) => row.team_name === game[`${side}_team`]);
+      const actual = recap.team_lineups.find((row) => row.team_id === team.team_id);
+      const raw = game[`${side}_lineup`];
+      assert.deepEqual(actual.starters.map((row) => row.player_id), raw.filter((row) => !['BE', 'IR'].includes(row.slot_position)).map((row) => row.player_id));
+      for (const row of [...actual.starters, ...actual.bench, ...actual.ir]) {
+        const source = raw.find((player) => player.player_id === row.player_id);
+        assert.deepEqual([row.slot, row.points, row.projected_points], [source.slot_position, source.points, source.projected_points]);
+      }
+    }
+  }
+});
+
+test('preview references, standings ranks, names, bid aliases and week labels are explicit', () => {
+  const recap = makeFixtureRecap();
+  const standings = new Map(recap.standings.map((row) => [row.team_id, row]));
+  for (const game of recap.scoreboard) {
+    assert.equal(game.home_rank, standings.get(game.home_team_id).rank);
+    assert.equal(game.away_rank, standings.get(game.away_team_id).rank);
+  }
+  for (const game of recap.preview) for (const team of game.teams) {
+    assert.deepEqual(team.availability, { team_id: team.team_id });
+  }
+  for (const team of recap.teams) assert.equal(team.display_name, team.name.trim());
+  for (const war of recap.roster_moves.bidding_wars) {
+    assert.equal(war.bid_count, war.bids.length);
+    assert.equal(war.total_bid_amount, war.total_bids);
+    assert.equal(war.total_bid_amount, war.bids.reduce((sum, row) => sum + row.bid, 0));
+  }
+  assert.equal(recap.injuries_and_byes.slot_week, 5);
+  assert.equal(recap.injuries_and_byes.week_points_week, 4);
+  for (const team of recap.injuries_and_byes.teams) for (const player of [...team.injuries, ...team.byes, ...team.ir_players]) {
+    assert.equal(player.next_week_slot, player.slot);
+    assert.notEqual(player.pro_team, 'None');
+  }
+});
+
+test('injury watch applies each threshold, excludes healthy/low-interest players and uses team-specific points', () => {
+  const players = [
+    { player_id: 1, season_points_rank: 150, lineup_slot: 'BE' },
+    { player_id: 2, percent_owned: 60, lineup_slot: 'BE' },
+    { player_id: 3, lineup_slot: 'QB' },
+    { player_id: 4, season_points_rank: 151, percent_owned: 59.9, lineup_slot: 'BE' },
+    { player_id: 5, season_points_rank: 1, injury_status: 'ACTIVE', lineup_slot: 'BE' },
+    { player_id: 6, season_points_rank: 1, pro_team: 'None', lineup_slot: 'QB', on_bye_week: true }
+  ].map((player) => ({ name: `Player ${player.player_id}`, position: 'QB', injury_status: 'OUT', ...player }));
+  const data = { teams: [{ team_id: 1 }], rostersByTeam: new Map([[1, players]]), currentPlayersByTeam: new Map([[1, [{ player_id: 3, points: 12 }]]]),
+    lineupSlots: [{ slot: 'QB', type: 'START', count: 1 }] };
+  const details = buildRosterDetails(data);
+  assert.deepEqual(details.injury_watch.map((row) => row.player_id), [1, 2, 3]);
+  assert.deepEqual(details.injury_watch.map((row) => row.matched_criteria), [['season_points_rank'], ['percent_rostered'], ['next_week_starter']]);
+  assert.equal(details.injury_watch[2].week_points, 12);
+  assert.equal(details.injury_watch[0].week_points, null);
+  const availability = buildAvailability({ ...data, priorWeekPlayersByTeam: data.currentPlayersByTeam });
+  assert.deepEqual(availability.bye_teams, []);
+  assert.ok(!JSON.stringify(availability).includes('None'));
+});
+
+test('season rank reuses rostered season-point rankings, never positional ranks', () => {
+  const data = buildRosterDetails({ teams: [{ team_id: 1 }], currentPlayersByTeam: new Map(),
+    rostersByTeam: new Map([[1, [
+      { player_id: 1, name: 'Ranked', position: 'QB', injury_status: 'OUT', total_points: 100, lineup_slot: 'BE' },
+      { player_id: 2, name: 'Position only', position: 'QB', injury_status: 'OUT', pos_rank: 1, lineup_slot: 'BE' }
+    ]]]), lineupSlots: [] });
+  assert.deepEqual(data.injury_watch.map((row) => [row.player_id, row.season_points_rank]), [[1, 1]]);
+});
+
+test('failed bid outcomes distinguish price, ties, prior drops and invalid sources', () => {
+  const claim = (team_id, playerId, bid_amount, status, date, dropId) => ({ team_id, bid_amount, status, date, scoring_period: 4, type: 'WAIVER',
+    items: [{ type: 'ADD', playerId, player: String(playerId) }, ...(dropId ? [{ type: 'DROP', playerId: dropId }] : [])] });
+  const transactions = [
+    claim(1, 1, 10, 'EXECUTED', 2000), claim(2, 1, 5, 'FAILED_INVALIDPLAYERSOURCE', 2001),
+    claim(1, 2, 10, 'EXECUTED', 3000), claim(2, 2, 10, 'FAILED_INVALIDPLAYERSOURCE', 3001),
+    claim(2, 3, 0, 'EXECUTED', 1000, 99), claim(2, 4, 1, 'FAILED_INVALIDPLAYERSOURCE', 4000, 99),
+    claim(2, 5, 1, 'FAILED_INVALIDPLAYERSOURCE', 5000)
+  ];
+  const result = summarizeTransactions({ transactions, teams: [{ team_id: 1 }, { team_id: 2 }], playersByTeam: new Map(), week: 4 });
+  assert.deepEqual(result.teams[1].failed_bids.map((row) => row.outcome), ['outbid', 'tiebreak_lost', 'player_already_dropped', 'invalid_source']);
+  assert.ok(result.teams[1].failed_bids.every((row) => row.reason === 'FAILED_INVALIDPLAYERSOURCE'));
+});
+
+test('repeated acquisitions retain chronology and points only from the owning box score', () => {
+  const transactions = [2, 1].map((team_id) => ({ team_id, type: 'FREEAGENT', status: 'EXECUTED', date: team_id * 1000,
+    items: [{ type: 'ADD', playerId: 7, player: 'Traveler' }] }));
+  const result = summarizeTransactions({ transactions, teams: [{ team_id: 1 }, { team_id: 2 }],
+    playersByTeam: new Map([[2, [{ player_id: 7, points: 14, lineup_slot: 'BE' }]]]), week: 4 });
+  assert.deepEqual(result.teams.map((team) => team.executed_claims.map((row) => [row.acquired_order, row.week_points])), [[[1, null]], [[2, 14]]]);
+});
+
+test('pending claims include only next-week pending or canceled waiver and free-agent claims', () => {
+  const base = { league, settings: settingsPayload.settings, teams, week: 4, regularSeason: true,
+    boxScoresByWeek, rosterResponses, transactions };
+  const rows = [
+    { type: 'WAIVER', status: 'PENDING', scoring_period: 5 },
+    { type: 'FREEAGENT', status: 'CANCELED', scoring_period: 5 },
+    { type: 'WAIVER', status: 'PENDING', scoring_period: 4 },
+    { type: 'WAIVER', status: 'EXECUTED', scoring_period: 5 },
+    { type: 'TRADE', status: 'PENDING', scoring_period: 5 }
+  ];
+  assert.deepEqual(buildRecapData({ ...base, pendingTransactions: rows }).pending_claims, rows.slice(0, 2));
 });
