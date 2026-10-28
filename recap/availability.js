@@ -18,7 +18,8 @@ function eligible(player, slot) {
 export function buildAvailability({ teams, rostersByTeam, priorWeekPlayersByTeam, lineupSlots }) {
   const byeTeams = new Set();
   const rows = teams.map((team) => {
-    const roster = rostersByTeam.get(team.team_id) ?? [];
+    const roster = (rostersByTeam.get(team.team_id) ?? [])
+      .filter((player) => String(player.pro_team ?? '').trim().toLowerCase() !== 'none');
     const weekPlayers = priorWeekPlayersByTeam.get(team.team_id) ?? [];
     const pointsById = new Map(weekPlayers.map((player) => [player.player_id, player.points]));
     const withWeekPoints = (player) => ({
@@ -26,10 +27,12 @@ export function buildAvailability({ teams, rostersByTeam, priorWeekPlayersByTeam
       player: player.name,
       position: player.position,
       slot: slotOf(player),
+      next_week_slot: slotOf(player),
       week_points: pointsById.get(player.player_id) ?? null,
-      pro_team: player.pro_team ?? null
+      pro_team: String(player.pro_team ?? '').trim().toLowerCase() === 'none' ? null : player.pro_team ?? null
     });
-    const byes = roster.filter((player) => player.on_bye_week === true).map((player) => {
+    const byes = roster.filter((player) => player.on_bye_week === true
+      && player.pro_team && String(player.pro_team).trim().toLowerCase() !== 'none').map((player) => {
       if (player.pro_team) byeTeams.add(player.pro_team);
       return withWeekPoints(player);
     });

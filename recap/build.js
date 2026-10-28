@@ -2,6 +2,7 @@ import { buildAvailability } from './availability.js';
 import { analyzeLineups } from './lineups.js';
 import { fromCents, toCents } from './numbers.js';
 import { analyzePlayers } from './players.js';
+import { buildRosterDetails, SCHEMA_VERSION } from './payload.js';
 import { calculatePowerRankings } from './rankings.js';
 import { calculateSeasonRecords, calculateWeekScoring } from './scoring.js';
 import { calculateStandings } from './standings.js';
@@ -148,8 +149,8 @@ function matchupSummary(matchup, teamsById, standingsById, weekRowsById) {
     away_result: outcome === 'W' ? 'L' : outcome === 'L' ? 'W' : 'T',
     home_record: standingsById.get(matchup.home_team_id)?.record ?? null,
     away_record: standingsById.get(matchup.away_team_id)?.record ?? null,
-    home_rank: weekRowsById.get(matchup.home_team_id)?.rank ?? null,
-    away_rank: weekRowsById.get(matchup.away_team_id)?.rank ?? null,
+    home_rank: standingsById.get(matchup.home_team_id)?.rank ?? null,
+    away_rank: standingsById.get(matchup.away_team_id)?.rank ?? null,
     home_h2h_margin: fromCents(toCents(homeScore) - toCents(awayScore)),
     away_h2h_margin: fromCents(toCents(awayScore) - toCents(homeScore)),
     ...(medianScoringFields(weekRowsById.get(matchup.home_team_id), weekRowsById.get(matchup.away_team_id)))
@@ -177,6 +178,7 @@ export function buildRecapData({
   boxScoresByWeek,
   rosterResponses,
   transactions,
+  pendingTransactions = [],
   previewMatchups = [],
   espnPowerRankings = [],
   espnPriorPowerRankings = [],
@@ -200,12 +202,15 @@ export function buildRecapData({
   const priorHistory = playerHistory(weeklyPlayerData, week);
   const rostersByTeam = rosterPlayerMap(rosterResponses, teams);
   const currentPlayersByTeam = teamPlayerMap(weeklyPlayerData, week);
+  const rosterDetails = buildRosterDetails({ teams, currentPlayersByTeam, rostersByTeam, lineupSlots });
   const availability = buildAvailability({
     teams,
     rostersByTeam,
     priorWeekPlayersByTeam: currentPlayersByTeam,
     lineupSlots
   });
+  availability.slot_week = week + 1;
+  availability.week_points_week = week;
   const rosterResponseIds = new Set(rosterResponses.map((response) => response.team_id));
   for (const teamAvailability of availability.teams) {
     teamAvailability.roster_present = rosterResponseIds.has(teamAvailability.team_id);
@@ -266,7 +271,6 @@ export function buildRecapData({
   const teamsById = new Map(teams.map((team) => [team.team_id, team]));
   const standingsById = new Map(standings.map((row) => [row.team_id, row]));
   const rankingById = new Map(rankings.map((row) => [row.team_id, row]));
-  const availabilityById = new Map(availability.teams.map((row) => [row.team_id, row]));
   const selectedWeekRowsById = new Map(selectedWeek.rows.map((row) => [row.team_id, row]));
   const scoreboard = selectedWeek.matchups.map((matchup) =>
     matchupSummary(matchup, teamsById, standingsById, selectedWeekRowsById)
@@ -358,8 +362,6 @@ export function buildRecapData({
       const away = standingsById.get(awayId);
       const homeRanking = rankingById.get(homeId);
       const awayRanking = rankingById.get(awayId);
-      const homeAvailability = availabilityById.get(homeId);
-      const awayAvailability = availabilityById.get(awayId);
       const closeToCut = (team) => team && bubbleWins != null && Math.abs(team.wins - bubbleWins) <= 1;
       return {
         week: week + 1,
@@ -374,7 +376,7 @@ export function buildRecapData({
           points_for: standing?.points_for ?? null,
           all_play: standing?.all_play ?? null,
           espn_power_score: (index === 0 ? homeRanking : awayRanking)?.espn_power_score ?? null,
-          availability: index === 0 ? homeAvailability : awayAvailability
+          availability: { team_id: index === 0 ? homeId : awayId }
         })),
         bubble_game: Boolean(closeToCut(home) && closeToCut(away)),
         winless_matchup: Boolean(home?.wins === 0 && away?.wins === 0)
@@ -388,6 +390,7 @@ export function buildRecapData({
     return {
       team_id: team.team_id,
       name: currentName,
+      display_name: currentName?.trim() ?? null,
       abbreviation: team.team_abbrev ?? team.abbreviation ?? null,
       owner_name: ownerDisplayName(team),
       renamed_from: oldName && oldName !== currentName ? oldName : null
@@ -395,6 +398,7 @@ export function buildRecapData({
   });
 
   return {
+    schema_version: SCHEMA_VERSION,
     name_snapshot: Object.fromEntries(teams.map((team) => [String(team.team_id), team.team_name ?? team.name])),
     meta: {
       league_id: league.league_id ?? null,
@@ -415,7 +419,13 @@ export function buildRecapData({
       bench_top: players.bench_top.map((player) => ({ ...player, team: teamsById.get(player.team_id)?.team_name ?? player.team }))
     },
     bench_analysis: benchForWeek,
+    ...rosterDetails,
     roster_moves: transactionsSummary,
+    pending_claims: pendingTransactions.filter((transaction) =>
+      ['WAIVER', 'FREEAGENT'].includes(transaction.type)
+      && ['PENDING', 'CANCELED', 'CANCELLED'].includes(transaction.status)
+      && Number(transaction.scoring_period ?? week + 1) === week + 1)
+      .map((transaction) => ({ ...transaction, scoring_period: week + 1 })),
     injuries_and_byes: availability,
     power_rankings: rankings.map((rank) => ({ ...rank, team: teamsById.get(rank.team_id)?.team_name ?? rank.team })),
     prior_power_rankings: previousRankings,

@@ -252,13 +252,40 @@ Every route in the upstream OpenAPI spec is covered.
 
 ### Deterministic weekly recaps
 
-`get_recap_data` accepts optional `week` and `include_preview` fields. If `week` is omitted, it
+`get_recap_data` accepts optional `week`, `include_preview`, `sections` and `compact` fields. If `week` is omitted, it
 uses the last completed regular-season week. It returns the league and team identities, `week_summary`,
 `scoreboard`, `standings`, `season_summary`, player highlights and callbacks, `bench_analysis`,
 `roster_moves`, `injuries_and_byes`, `power_rankings`, `preview`, and `validation`. Numeric results
 are computed by pure functions under `recap/`; points are accumulated in cents and rounded only for
 output. Check `validation.passed` before writing commentary. The `weekly_recap` prompt contains the
 required writing format and tells the writing model to compute no numbers itself.
+
+Payloads include `schema_version` (`1.1.0`). `get_recap_schema` returns the JSON schema and
+section names. By default all sections and null fields remain present. `sections` selects
+top-level sections, always retaining `schema_version` and `meta`; an empty list returns only
+those two fields. `compact: true` recursively omits null-valued object fields, preserving arrays,
+zero and false. Neither option changes calculations.
+
+`team_lineups` contains actual recap-week starters, bench and IR players, not optimal assignments.
+`injury_watch` filters injured players by season-points rank <=150, ownership >=60%, or a next-week
+starting slot. Season ranks reuse the existing rostered-player ranking; free agents are not ranked.
+`pending_claims` contains next-week pending/canceled waiver or free-agent transactions.
+Preview availability is now a `{team_id}` reference into `injuries_and_byes.teams`.
+Availability's `slot_week` and `week_points_week` label the two timeframes; `next_week_slot`
+is an explicit alias of `slot`. Sentinel pro team `None` is excluded from availability.
+Scoreboard ranks now match standings. Teams retain `name` and add trimmed `display_name`.
+
+For compatibility, bidding-war `total_bids` remains the legacy dollar sum, now also named
+`total_bid_amount`; `bid_count` is the number of listed bids. Failed bids retain the raw `reason`
+and add a conservative `outcome` (including `unknown` when evidence is insufficient).
+Executed claims include chronological, per-player `acquired_order` and `acquired_at`; their
+week points are read only from the claiming team's actual box score.
+
+Generate the sanitized league 380348 / season 2026 Week 7 fixture with
+`node --env-file=.env scripts/capture-recap-fixture.js` while the upstream API is running and
+local `ESPN_S2` / `SWID` credentials are configured. This invokes the recap handler with
+`week: 7, include_preview: true`, verifies scope, replaces all `owner_name` values with
+`owner_<team_id>`, and writes `tests/fixtures/recap_w7.json`. Never commit raw owner names or cookies.
 
 The recap fetches each scoring week once per request, then requests all next-week rosters together.
 Its tool calls leave league IDs and ESPN cookies out of the request so a preconfigured upstream API
