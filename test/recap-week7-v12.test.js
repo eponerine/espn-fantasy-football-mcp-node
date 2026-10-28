@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { BASELINE_REF, COMPACT_REQUESTED_OPTIONS, migrateFixture, readOriginalFixture, availabilityPlayers, legacyCompact, payloadSizes } from '../scripts/migrate-recap-v12-fixture.js';
+import { BASELINE_REF, COMPACT_REQUESTED_OPTIONS, migrateFixture, readOriginalFixture, availabilityPlayers, legacyCompact, payloadSizes } from './helpers/recap-fixture-migration.js';
 import { buildRecapData } from '../recap/build.js';
 import { buildRosterDetails, normalizeRecapStrings, selectRecapSections, STARTER_SLOT_ORDER } from '../recap/payload.js';
 import { getRecapSchema, recapSchema } from '../recap/schema.js';
