@@ -106,6 +106,12 @@ This helper generates an ephemeral token if `MCP_AUTH_TOKEN` is unset and binds 
 - **Host Binding**: Set `--host` or `MCP_HOST` to `127.0.0.1` for local loopback (default) or `0.0.0.0` for containerized environments.
 - **Graceful Shutdown**: On `SIGTERM` or `SIGINT`, the HTTP server immediately enters draining mode (`/healthz` returns `503`), stops accepting new connections, drains existing in-flight tool requests, and closes idle keep-alive connections. Active requests are allowed up to `MCP_SHUTDOWN_TIMEOUT_MS` (default 55s) before connections are closed.
 
+Stdio advertises `capabilities.tools.listChanged: true`. The SDK automatically sends
+`notifications/tools/list_changed` when a registered tool definition changes; there is no
+unsolicited startup notification. Clients should refresh `tools/list` after that notification.
+The stateless HTTP transport does not support server push to idle clients. After deploying changed
+tool definitions, reconnect or restart the MCP client connection and request `tools/list` again.
+
 ### Container Deployment
 
 When running this server as a container service alongside your fantasy API:
@@ -252,7 +258,8 @@ Every route in the upstream OpenAPI spec is covered.
 
 ### Deterministic weekly recaps
 
-`get_recap_data` accepts optional `week`, `include_preview`, `sections` and `compact` fields. If `week` is omitted, it
+`get_recap_data` accepts optional `week`, `include_preview`, `sections`, `compact`,
+`include_history`, `include_gap_detail` and `include_optimal_assignment` fields. If `week` is omitted, it
 uses the last completed regular-season week. It returns the league and team identities, `week_summary`,
 `scoreboard`, `standings`, `season_summary`, player highlights and callbacks, `bench_analysis`,
 `roster_moves`, `injuries_and_byes`, `power_rankings`, `preview`, and `validation`. Numeric results
@@ -260,19 +267,35 @@ are computed by pure functions under `recap/`; points are accumulated in cents a
 output. Check `validation.passed` before writing commentary. The `weekly_recap` prompt contains the
 required writing format and tells the writing model to compute no numbers itself.
 
-Payloads include `schema_version` (`1.1.0`). `get_recap_schema` returns the JSON schema and
+Payloads include `schema_version` (`1.2.0`). `get_recap_schema` returns the JSON schema and
 section names. By default all sections and null fields remain present. `sections` selects
 top-level sections, always retaining `schema_version` and `meta`; an empty list returns only
 those two fields. `compact: true` recursively omits null-valued object fields, preserving arrays,
-zero and false. Neither option changes calculations.
+zero and false. Neither option changes calculations. When selecting `team_lineups`, its
+`team_lineups_week` metadata is also retained; `pending_claims` similarly retains
+`pending_claims_meta` with `scoring_period`, `transaction_types_checked` and `source_count`,
+even for an empty claims list.
+
+`include_history` defaults to `true`; set it to `false` to omit historical detail.
+`include_gap_detail` defaults to `false`, returning only actionable gaps; `true` includes every
+starting-slot assessment. `include_optimal_assignment` defaults to `true`; `false` omits both
+`optimal_assignment` and its deprecated `assignment` alias from bench analysis. Bench `swaps`
+are independent single-swap alternatives, not a simultaneous plan; their gains cannot be summed.
 
 `team_lineups` contains actual recap-week starters, bench and IR players, not optimal assignments.
+Each team includes `roster_week`, `starters_total` and `bench_total`. Each player includes
+`pro_team`, `injury_status`, `is_bye_next_week` and `percent_rostered`; unavailable values are
+explicitly null in noncompact output, and a false bye flag is retained in compact output.
 `injury_watch` filters injured players by season-points rank <=150, ownership >=60%, or a next-week
 starting slot. Season ranks reuse the existing rostered-player ranking; free agents are not ranked.
 `pending_claims` contains next-week pending/canceled waiver or free-agent transactions.
 Preview availability is now a `{team_id}` reference into `injuries_and_byes.teams`.
-Availability's `slot_week` and `week_points_week` label the two timeframes; `next_week_slot`
-is an explicit alias of `slot`. Sentinel pro team `None` is excluded from availability.
+Availability and each injury-watch row include `injuries_as_of` (a timestamp) and `roster_week`.
+Availability `metadata` identifies `slot` as an alias of `next_week_slot`: these are roster snapshot
+assignments, not final next-week lineups. `week_points` always refers to the recap week.
+Sentinel pro team `None` is excluded from availability.
+Power-ranking `diff_vs_espn` is `espn_rank - rank`: positive means the custom ranking is higher.
+Preview `next_week_flags` uses player-name arrays and includes the `open_ir_slots` count.
 Scoreboard ranks now match standings. Teams retain `name` and add trimmed `display_name`.
 
 For compatibility, bidding-war `total_bids` remains the legacy dollar sum, now also named

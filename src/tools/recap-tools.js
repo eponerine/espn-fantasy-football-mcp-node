@@ -32,7 +32,10 @@ function collection(payload, key) {
 }
 
 export function createRecapHandler(client) {
-  return async function getRecapData({ week: requestedWeek, include_preview: includePreview = true, sections, compact = false } = {}) {
+  return async function getRecapData({
+    week: requestedWeek, include_preview: includePreview = true, sections, compact = false,
+    include_history = true, include_gap_detail = false, include_optimal_assignment = true
+  } = {}) {
     if (sections?.some((section) => !RECAP_SECTIONS.includes(section))) throw new Error('Unknown recap section.');
     const requestCache = new Map();
     const get = (path, params = {}) => {
@@ -69,6 +72,9 @@ export function createRecapHandler(client) {
       week > 1 ? get('/power-rankings', { week: week - 1 }) : Promise.resolve(null),
       get('/transactions', { scoringPeriod: nextWeek })
     ]);
+    if (!Array.isArray(pendingPayload) && !Array.isArray(pendingPayload?.transactions)) {
+      throw new Error('Next-week transaction response did not contain a transactions array.');
+    }
     const matchupsArePlayoffs = collection(boxScoresByWeek.at(-1), 'box_scores').some((matchup) => matchup.is_playoff);
     const regularSeason = week <= regularSeasonWeeks && !matchupsArePlayoffs;
     const snapshots = await readNameSnapshots();
@@ -80,6 +86,7 @@ export function createRecapHandler(client) {
       teams,
       week,
       regularSeason,
+      include_gap_detail,
       boxScoresByWeek,
       rosterResponses,
       transactions: collection(transactionPayload, 'transactions'),
@@ -94,7 +101,7 @@ export function createRecapHandler(client) {
     const retained = Object.fromEntries(retainedWeeks.map((snapshotWeek) => [String(snapshotWeek), leagueSnapshots[String(snapshotWeek)]]));
     await writeNameSnapshots({ ...snapshots, [scopeKey]: retained });
     delete recap.name_snapshot;
-    return selectRecapSections(recap, { sections, compact });
+    return selectRecapSections(recap, { sections, compact, include_history, include_gap_detail, include_optimal_assignment });
   };
 }
 
@@ -102,7 +109,10 @@ const weekSchema = z.number().int().min(1).optional();
 const recapInput = z.object({
   week: weekSchema,
   include_preview: z.boolean().optional().default(true),
-  sections: z.array(z.enum(RECAP_SECTIONS)).optional().describe('Top-level sections to return; meta and schema_version are always retained.'),
+  sections: z.array(z.enum(RECAP_SECTIONS)).optional().describe('Top-level sections to return; meta and schema_version are always retained, with team_lineups_week and pending_claims_meta alongside their sections.'),
+  include_history: z.boolean().optional().default(true).describe('Include historical recap detail.'),
+  include_gap_detail: z.boolean().optional().default(false).describe('Include every starting-slot gap assessment, including non-actionable rows.'),
+  include_optimal_assignment: z.boolean().optional().default(true).describe('Include bench analysis optimal_assignment and its deprecated assignment alias.'),
   compact: z.boolean().optional().default(false).describe('Omit null-valued object fields recursively; preserve all numeric values and arrays.')
 });
 

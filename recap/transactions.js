@@ -44,16 +44,10 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
     && (candidate.scoring_period ?? week) === (transaction.scoring_period ?? week)
     && Math.floor(Number(candidate.date) / 1000) === Math.floor(Number(transaction.date) / 1000));
   const outcomeFor = (transaction) => {
-    const drop = droppedItem(transaction);
-    if (drop && clean.some((candidate) => candidate.status === 'EXECUTED'
-      && candidate.team_id === transaction.team_id && Number(candidate.date) < Number(transaction.date)
-      && droppedItem(candidate)?.playerId === drop.playerId)) return 'player_already_dropped';
     const winner = winnerFor(transaction);
     if (winner && Number(winner.bid_amount) > Number(transaction.bid_amount)) return 'outbid';
-    if (winner && winner.team_id !== transaction.team_id
-      && Number(winner.bid_amount) === Number(transaction.bid_amount)) return 'tiebreak_lost';
-    if (transaction.status === 'FAILED_INVALIDPLAYERSOURCE') return 'invalid_source';
-    if (transaction.status === 'FAILED_ROSTERLIMIT') return 'roster_limit';
+    if (winner && Number(winner.bid_amount) === Number(transaction.bid_amount)) return 'tiebreak_lost';
+    if (!winner && transaction.status === 'FAILED_PLAYERALREADYDROPPED') return 'player_already_dropped';
     return 'unknown';
   };
   const teamById = new Map(teams.map((team) => [team.team_id, team]));
@@ -106,6 +100,8 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
         bid,
         reason: transaction.status,
         outcome: outcomeFor(transaction),
+        winner_team_id: winnerFor(transaction)?.team_id ?? null,
+        winning_bid: winnerFor(transaction)?.bid_amount ?? null,
         winner: teamById.get(winnerFor(transaction)?.team_id)?.team_name
           ?? teamById.get(winnerFor(transaction)?.team_id)?.name ?? null
       });

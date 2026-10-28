@@ -2,7 +2,7 @@ import { buildAvailability } from './availability.js';
 import { analyzeLineups } from './lineups.js';
 import { fromCents, toCents } from './numbers.js';
 import { analyzePlayers } from './players.js';
-import { buildRosterDetails, SCHEMA_VERSION } from './payload.js';
+import { buildRosterDetails, normalizeRecapStrings, SCHEMA_VERSION } from './payload.js';
 import { calculatePowerRankings } from './rankings.js';
 import { calculateSeasonRecords, calculateWeekScoring } from './scoring.js';
 import { calculateStandings } from './standings.js';
@@ -182,7 +182,8 @@ export function buildRecapData({
   previewMatchups = [],
   espnPowerRankings = [],
   espnPriorPowerRankings = [],
-  nameSnapshots = {}
+  nameSnapshots = {},
+  include_gap_detail = false
 }) {
   const lineupSlots = settings.lineup_slots ?? [];
   const medianScoring = Boolean(settings.median_scoring) && regularSeason;
@@ -202,12 +203,16 @@ export function buildRecapData({
   const priorHistory = playerHistory(weeklyPlayerData, week);
   const rostersByTeam = rosterPlayerMap(rosterResponses, teams);
   const currentPlayersByTeam = teamPlayerMap(weeklyPlayerData, week);
-  const rosterDetails = buildRosterDetails({ teams, currentPlayersByTeam, rostersByTeam, lineupSlots });
+  const injuriesAsOf = new Date().toISOString();
+  const rosterDetails = buildRosterDetails({ teams, currentPlayersByTeam, rostersByTeam, lineupSlots, week, injuries_as_of: injuriesAsOf });
   const availability = buildAvailability({
     teams,
     rostersByTeam,
     priorWeekPlayersByTeam: currentPlayersByTeam,
-    lineupSlots
+    lineupSlots,
+    injuries_as_of: injuriesAsOf,
+    roster_week: week + 1,
+    include_gap_detail
   });
   availability.slot_week = week + 1;
   availability.week_points_week = week;
@@ -226,6 +231,7 @@ export function buildRecapData({
   const benchSeasonTotal = lineupByWeek.reduce((total, analysis) => total + toCents(analysis.league_total_left), 0);
   const players = analyzePlayers({ week, weeklyData: weeklyPlayerData });
   for (const team of benchForWeek.teams) {
+    team.optimal_assignment = team.assignment;
     for (const swap of team.swaps) {
       const benchCallback = callbackFor(swap.bench_player_id, priorHistory, week);
       const starterCallback = callbackFor(swap.starter_player_id, priorHistory, week);
@@ -235,6 +241,7 @@ export function buildRecapData({
       });
     }
   }
+  benchForWeek.swap_note = 'Swaps are independent single-swap alternatives, not cumulative changes.';
 
   const transactionsSummary = summarizeTransactions({
     transactions,
@@ -376,7 +383,20 @@ export function buildRecapData({
           points_for: standing?.points_for ?? null,
           all_play: standing?.all_play ?? null,
           espn_power_score: (index === 0 ? homeRanking : awayRanking)?.espn_power_score ?? null,
-          availability: { team_id: index === 0 ? homeId : awayId }
+          availability: { team_id: index === 0 ? homeId : awayId },
+          next_week_flags: (() => {
+            const roster = rostersByTeam.get(index === 0 ? homeId : awayId) ?? [];
+            const starters = roster.filter((player) => lineupSlots.some((slot) =>
+              ['START', 'FLEX'].includes(slot.type) && slot.slot === (player.lineup_slot ?? player.slot_position)));
+            const hasProTeam = (player) => player.pro_team && String(player.pro_team).trim().toLowerCase() !== 'none';
+            return {
+              starters_on_bye: starters.filter((player) => hasProTeam(player) && player.on_bye_week === true).map((player) => player.name),
+              questionable_starters: starters.filter((player) => String(player.injury_status).toUpperCase() === 'QUESTIONABLE').map((player) => player.name),
+              out_starters: starters.filter((player) => ['OUT', 'INJURY_RESERVE'].includes(String(player.injury_status).toUpperCase())).map((player) => player.name),
+              open_ir_slots: Math.max(0, lineupSlots.filter((slot) => slot.slot === 'IR').reduce((total, slot) => total + Number(slot.count || 0), 0)
+                - roster.filter((player) => (player.lineup_slot ?? player.slot_position) === 'IR').length)
+            };
+          })()
         })),
         bubble_game: Boolean(closeToCut(home) && closeToCut(away)),
         winless_matchup: Boolean(home?.wins === 0 && away?.wins === 0)
@@ -397,7 +417,7 @@ export function buildRecapData({
     };
   });
 
-  return {
+  return normalizeRecapStrings({
     schema_version: SCHEMA_VERSION,
     name_snapshot: Object.fromEntries(teams.map((team) => [String(team.team_id), team.team_name ?? team.name])),
     meta: {
@@ -419,6 +439,7 @@ export function buildRecapData({
       bench_top: players.bench_top.map((player) => ({ ...player, team: teamsById.get(player.team_id)?.team_name ?? player.team }))
     },
     bench_analysis: benchForWeek,
+    team_lineups_week: week,
     ...rosterDetails,
     roster_moves: transactionsSummary,
     pending_claims: pendingTransactions.filter((transaction) =>
@@ -426,10 +447,15 @@ export function buildRecapData({
       && ['PENDING', 'CANCELED', 'CANCELLED'].includes(transaction.status)
       && Number(transaction.scoring_period ?? week + 1) === week + 1)
       .map((transaction) => ({ ...transaction, scoring_period: week + 1 })),
+    pending_claims_meta: {
+      scoring_period: week + 1,
+      transaction_types_checked: ['WAIVER', 'FREEAGENT'],
+      source_count: pendingTransactions.length
+    },
     injuries_and_byes: availability,
     power_rankings: rankings.map((rank) => ({ ...rank, team: teamsById.get(rank.team_id)?.team_name ?? rank.team })),
     prior_power_rankings: previousRankings,
     preview,
     validation
-  };
+  });
 }
