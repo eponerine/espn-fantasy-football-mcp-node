@@ -17,7 +17,8 @@ test('A1 winning claim takes precedence over an earlier dropped player', () => {
   assert.equal(summarize(rows).outcome, 'tiebreak_lost');
   rows[2].bid_amount = 4;
   assert.equal(summarize(rows).outcome, 'outbid');
-  assert.equal(summarize(rows.slice(0, 2)).outcome, 'player_already_dropped');
+  assert.equal(summarize(rows.slice(0, 2)).outcome, 'drop_player_already_dropped');
+  assert.equal(summarize([claim(1, 3, 'FAILED_PLAYERALREADYDROPPED')]).outcome, 'player_already_dropped');
   assert.equal(summarize([claim(1, 3, 'FAILED_ROSTERLIMIT')]).outcome, 'unknown');
   assert.equal(summarize([claim(1, 3, 'FAILED_PLAYERALREADYDROPPED'),
     claim(9, 3, 'EXECUTED', { date: 12000 })]).outcome, 'player_already_dropped');

@@ -90,6 +90,7 @@ export function buildAvailability({
     roster_week,
     metadata: {
       slot_alias: 'next_week_slot',
+      canonical_slot_field: 'next_week_slot',
       slot_semantics: 'slot and next_week_slot are roster snapshot assignments, not final next-week lineups.'
     },
     bye_teams: [...byeTeams].sort(),

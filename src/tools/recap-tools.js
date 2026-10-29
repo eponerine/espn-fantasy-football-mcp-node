@@ -34,7 +34,7 @@ function collection(payload, key) {
 export function createRecapHandler(client) {
   return async function getRecapData({
     week: requestedWeek, include_preview: includePreview = true, sections, compact = false,
-    include_history = true, include_gap_detail = false, include_optimal_assignment = true
+    include_history = true, include_gap_detail = false, include_optimal_assignment = true, slim = false
   } = {}) {
     if (sections?.some((section) => !RECAP_SECTIONS.includes(section))) throw new Error('Unknown recap section.');
     const requestCache = new Map();
@@ -101,7 +101,7 @@ export function createRecapHandler(client) {
     const retained = Object.fromEntries(retainedWeeks.map((snapshotWeek) => [String(snapshotWeek), leagueSnapshots[String(snapshotWeek)]]));
     await writeNameSnapshots({ ...snapshots, [scopeKey]: retained });
     delete recap.name_snapshot;
-    return selectRecapSections(recap, { sections, compact, include_history, include_gap_detail, include_optimal_assignment });
+    return selectRecapSections(recap, { sections, compact, include_history, include_gap_detail, include_optimal_assignment, slim });
   };
 }
 
@@ -113,7 +113,9 @@ const recapInput = z.object({
   include_history: z.boolean().optional().default(true).describe('Include historical recap detail.'),
   include_gap_detail: z.boolean().optional().default(false).describe('Include every starting-slot gap assessment, including non-actionable rows.'),
   include_optimal_assignment: z.boolean().optional().default(true).describe('Include bench analysis optimal_assignment and its deprecated assignment alias.'),
-  compact: z.boolean().optional().default(false).describe('Omit null-valued object fields recursively; preserve all numeric values and arrays.')
+  compact: z.boolean().optional().default(false).describe('Omit null-valued object fields recursively, except player pro_team, week_points, projected_points and percent_rostered, which stay explicit nulls; preserve all numeric values and arrays.'),
+  slim: z.boolean().optional().default(false).describe('Replace duplicated objects with team_id/matchup references (see get_recap_schema x-slim).'),
+  pretty: z.boolean().optional().default(false).describe('Pretty-print the JSON text; default is minified.')
 });
 
 export function registerRecapTools(server, client) {
@@ -130,7 +132,7 @@ export function registerRecapTools(server, client) {
       inputSchema: recapInput,
       annotations: READ_ONLY
     },
-    safeHandler(async (args) => jsonResult(await handler(args)))
+    safeHandler(async ({ pretty = false, ...args }) => jsonResult(await handler(args), { pretty }))
   );
 
   const sections = [

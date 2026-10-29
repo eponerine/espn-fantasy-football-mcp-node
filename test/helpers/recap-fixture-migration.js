@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { normalizeRecapStrings, STARTER_SLOT_ORDER } from '../../recap/payload.js';
+import { normalizeRecapStrings, PLAYER_NULLABLE_KEYS, SCHEMA_VERSION, STARTER_SLOT_ORDER } from '../../recap/payload.js';
 import { fromCents, toCents } from '../../recap/numbers.js';
 import { jsonResult } from '../../src/tools/shared.js';
 
@@ -112,6 +112,20 @@ export function legacyCompact(value) {
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value)
     .filter(([, entry]) => entry !== null).map(([key, entry]) => [key, legacyCompact(entry)]));
   return value;
+}
+
+/** 1.3.0 compact: legacy null removal except explicit-null player keys. */
+export function currentCompact(value) {
+  if (Array.isArray(value)) return value.map(currentCompact);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value)
+    .filter(([key, entry]) => entry !== null || PLAYER_NULLABLE_KEYS.includes(key))
+    .map(([key, entry]) => [key, currentCompact(entry)]));
+  return value;
+}
+
+/** Validates a pre-1.3 capture against the current schema shape. */
+export function asCurrentVersion(recap) {
+  return { ...recap, schema_version: SCHEMA_VERSION };
 }
 
 export function payloadSizes(value) {

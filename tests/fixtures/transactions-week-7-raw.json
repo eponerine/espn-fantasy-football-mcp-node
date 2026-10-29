@@ -1,0 +1,898 @@
+{
+  "transactions": [
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "WAIVER",
+      "status": "FAILED_PLAYERALREADYDROPPED",
+      "scoring_period": 7,
+      "date": 1792566321316,
+      "bid_amount": 13,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4722893,
+          "player": "Jaleel McLaughlin"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362619,
+          "player": "Chris Rodriguez Jr."
+        }
+      ]
+    },
+    {
+      "team_id": 9,
+      "team_name": "3kids and a horse ",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321317,
+      "bid_amount": 3,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4586312,
+          "player": "Jaylin Noel"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4038441,
+          "player": "Justice Hill"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "PENDING",
+      "scoring_period": 7,
+      "date": 1792552721845,
+      "bid_amount": 10,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4427095,
+          "player": "DeMario Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 7,
+      "team_name": "Red Pandas",
+      "type": "WAIVER",
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "scoring_period": 7,
+      "date": 1792566321318,
+      "bid_amount": 2,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4723820,
+          "player": "Omar Cooper Jr."
+        }
+      ]
+    },
+    {
+      "team_id": 3,
+      "team_name": "Boogie Suckers ",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792601854949,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4360516,
+          "player": "Tyrone Tracy Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 4361411,
+          "player": "Pat Freiermuth"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "PENDING",
+      "scoring_period": 7,
+      "date": 1792552925383,
+      "bid_amount": 3,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4586312,
+          "player": "Jaylin Noel"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "PENDING",
+      "scoring_period": 7,
+      "date": 1792552740190,
+      "bid_amount": 10,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4723820,
+          "player": "Omar Cooper Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 2,
+      "team_name": "THE RETIRED GUY",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321317,
+      "bid_amount": 4,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 3055899,
+          "player": "Harrison Butker"
+        },
+        {
+          "type": "DROP",
+          "playerId": 3917232,
+          "player": "Tyler Bass"
+        }
+      ]
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792672600943,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4433970,
+          "player": "J.J. McCarthy"
+        },
+        {
+          "type": "DROP",
+          "playerId": 3046439,
+          "player": "Hunter Henry"
+        }
+      ]
+    },
+    {
+      "team_id": 9,
+      "team_name": "3kids and a horse ",
+      "type": "WAIVER",
+      "status": "CANCELED",
+      "scoring_period": 7,
+      "date": 1792515262510,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 5123663,
+          "player": "Isaac TeSlaa"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4430539,
+          "player": "Brenton Strange"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "PENDING",
+      "scoring_period": 7,
+      "date": 1792541499880,
+      "bid_amount": 2,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4869645,
+          "player": "Caleb Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "CANCELED",
+      "scoring_period": 7,
+      "date": 1792541509138,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4360423,
+          "player": "Michael Penix Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 7,
+      "team_name": "Red Pandas",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321318,
+      "bid_amount": 2,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": -16005,
+          "player": "Browns D/ST"
+        }
+      ]
+    },
+    {
+      "team_id": 5,
+      "team_name": "Christian Mingle",
+      "type": "WAIVER",
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "scoring_period": 7,
+      "date": 1792566321317,
+      "bid_amount": 7,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4427095,
+          "player": "DeMario Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 2973405,
+          "player": "Kalif Raymond"
+        }
+      ]
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "WAIVER",
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "scoring_period": 7,
+      "date": 1792566321316,
+      "bid_amount": 11,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4427095,
+          "player": "DeMario Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 3046439,
+          "player": "Hunter Henry"
+        }
+      ]
+    },
+    {
+      "team_id": 7,
+      "team_name": "Red Pandas",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792597260097,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4686468,
+          "player": "Seth McGowan"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4870653,
+          "player": "KC Concepcion"
+        }
+      ]
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321318,
+      "bid_amount": 1,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 17372,
+          "player": "Chris Boswell"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4686361,
+          "player": "Cam Little"
+        }
+      ]
+    },
+    {
+      "team_id": 3,
+      "team_name": "Boogie Suckers ",
+      "type": "WAIVER",
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "scoring_period": 7,
+      "date": 1792566321317,
+      "bid_amount": 5,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4427095,
+          "player": "DeMario Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4361411,
+          "player": "Pat Freiermuth"
+        }
+      ]
+    },
+    {
+      "team_id": 12,
+      "team_name": "Football and Crabcakes ",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321318,
+      "bid_amount": 1,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 5081432,
+          "player": "Antonio Williams"
+        }
+      ]
+    },
+    {
+      "team_id": 5,
+      "team_name": "Christian Mingle",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792577530105,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 3116389,
+          "player": "Samaje Perine"
+        },
+        {
+          "type": "DROP",
+          "playerId": 2973405,
+          "player": "Kalif Raymond"
+        }
+      ]
+    },
+    {
+      "team_id": 5,
+      "team_name": "Christian Mingle",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792577589889,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4722893,
+          "player": "Jaleel McLaughlin"
+        },
+        {
+          "type": "DROP",
+          "playerId": 5082424,
+          "player": "Dominic Zvada"
+        }
+      ]
+    },
+    {
+      "team_id": 4,
+      "team_name": "Joseph's Scary Team",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792930310332,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 3116165,
+          "player": "Chris Godwin Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 4360939,
+          "player": "Rashod Bateman"
+        }
+      ]
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321323,
+      "bid_amount": 1,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": -16003,
+          "player": "Bears D/ST"
+        },
+        {
+          "type": "DROP",
+          "playerId": -16027,
+          "player": "Buccaneers D/ST"
+        }
+      ]
+    },
+    {
+      "team_id": 11,
+      "team_name": "NABERHOOD WATCH",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792679384795,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4870653,
+          "player": "KC Concepcion"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4382466,
+          "player": "Jalen Nailor"
+        }
+      ]
+    },
+    {
+      "team_id": 2,
+      "team_name": "THE RETIRED GUY",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792796448234,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": -16008,
+          "player": "Lions D/ST"
+        },
+        {
+          "type": "DROP",
+          "playerId": -16014,
+          "player": "Rams D/ST"
+        }
+      ]
+    },
+    {
+      "team_id": 12,
+      "team_name": "Football and Crabcakes ",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792571614711,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": -16010,
+          "player": "Titans D/ST"
+        },
+        {
+          "type": "DROP",
+          "playerId": -16011,
+          "player": "Colts D/ST"
+        }
+      ]
+    },
+    {
+      "team_id": 9,
+      "team_name": "3kids and a horse ",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321318,
+      "bid_amount": 2,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4710855,
+          "player": "Konata Mumpfield"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4430539,
+          "player": "Brenton Strange"
+        }
+      ]
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321308,
+      "bid_amount": 18,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4702555,
+          "player": "Jonah Coleman"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362619,
+          "player": "Chris Rodriguez Jr."
+        }
+      ]
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "WAIVER",
+      "status": "FAILED_PLAYERALREADYDROPPED",
+      "scoring_period": 7,
+      "date": 1792566321316,
+      "bid_amount": 18,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 3116389,
+          "player": "Samaje Perine"
+        },
+        {
+          "type": "DROP",
+          "playerId": 2969939,
+          "player": "Jameis Winston"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "PENDING",
+      "scoring_period": 7,
+      "date": 1792541453960,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4360423,
+          "player": "Michael Penix Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 3,
+      "team_name": "Boogie Suckers ",
+      "type": "WAIVER",
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "scoring_period": 7,
+      "date": 1792566321317,
+      "bid_amount": 7,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4723820,
+          "player": "Omar Cooper Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 4361411,
+          "player": "Pat Freiermuth"
+        }
+      ]
+    },
+    {
+      "team_id": 12,
+      "team_name": "Football and Crabcakes ",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321316,
+      "bid_amount": 11,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4427095,
+          "player": "DeMario Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 2578570,
+          "player": "Jacoby Brissett"
+        }
+      ]
+    },
+    {
+      "team_id": 10,
+      "team_name": "Hot Toddy",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321307,
+      "bid_amount": 23,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4426386,
+          "player": "Roschon Johnson"
+        },
+        {
+          "type": "DROP",
+          "playerId": 2969939,
+          "player": "Jameis Winston"
+        }
+      ]
+    },
+    {
+      "team_id": 7,
+      "team_name": "Red Pandas",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792591037203,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4249087,
+          "player": "Matt Gay"
+        }
+      ]
+    },
+    {
+      "team_id": 7,
+      "team_name": "Red Pandas",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321323,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4870653,
+          "player": "KC Concepcion"
+        }
+      ]
+    },
+    {
+      "team_id": 11,
+      "team_name": "NABERHOOD WATCH",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792679433192,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4686658,
+          "player": "Mike Washington Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 5083315,
+          "player": "Kenyon Sadiq"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321316,
+      "bid_amount": 10,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4723820,
+          "player": "Omar Cooper Jr."
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "scoring_period": 7,
+      "date": 1792566321318,
+      "bid_amount": 3,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4586312,
+          "player": "Jaylin Noel"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 7,
+      "team_name": "Red Pandas",
+      "type": "WAIVER",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792566321323,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4569603,
+          "player": "Malik Washington"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "scoring_period": 7,
+      "date": 1792566321316,
+      "bid_amount": 10,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4427095,
+          "player": "DeMario Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 8,
+      "team_name": "Chargin' Chucks",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792865759114,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4426338,
+          "player": "Bo Nix"
+        },
+        {
+          "type": "DROP",
+          "playerId": -16019,
+          "player": "Giants D/ST"
+        }
+      ]
+    },
+    {
+      "team_id": 1,
+      "team_name": "Pewter City Geodudes",
+      "type": "WAIVER",
+      "status": "FAILED_PLAYERALREADYDROPPED",
+      "scoring_period": 7,
+      "date": 1792566321318,
+      "bid_amount": 2,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4869645,
+          "player": "Caleb Douglas"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4362081,
+          "player": "Cameron Dicker"
+        }
+      ]
+    },
+    {
+      "team_id": 5,
+      "team_name": "Christian Mingle",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792861878622,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4361411,
+          "player": "Pat Freiermuth"
+        },
+        {
+          "type": "DROP",
+          "playerId": 8439,
+          "player": "Aaron Rodgers"
+        }
+      ]
+    },
+    {
+      "team_id": 5,
+      "team_name": "Christian Mingle",
+      "type": "FREEAGENT",
+      "status": "EXECUTED",
+      "scoring_period": 7,
+      "date": 1792768020973,
+      "bid_amount": 0,
+      "items": [
+        {
+          "type": "ADD",
+          "playerId": 4363538,
+          "player": "Chad Ryland"
+        },
+        {
+          "type": "DROP",
+          "playerId": 4722893,
+          "player": "Jaleel McLaughlin"
+        }
+      ]
+    }
+  ]
+}

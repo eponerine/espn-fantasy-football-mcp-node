@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { BASELINE_REF, COMPACT_REQUESTED_OPTIONS, migrateFixture, readOriginalFixture, availabilityPlayers, legacyCompact, payloadSizes } from './helpers/recap-fixture-migration.js';
+import { BASELINE_REF, COMPACT_REQUESTED_OPTIONS, migrateFixture, readOriginalFixture, availabilityPlayers, legacyCompact, currentCompact, asCurrentVersion, payloadSizes } from './helpers/recap-fixture-migration.js';
 import { buildRecapData } from '../recap/build.js';
-import { buildRosterDetails, normalizeRecapStrings, selectRecapSections, STARTER_SLOT_ORDER } from '../recap/payload.js';
+import { buildRosterDetails, normalizeRecapStrings, selectRecapSections, STARTER_SLOT_ORDER, SCHEMA_VERSION } from '../recap/payload.js';
 import { getRecapSchema, recapSchema } from '../recap/schema.js';
 import { toCents } from '../recap/numbers.js';
 
@@ -206,9 +206,9 @@ test('B6 availability and injury-watch timestamps retain the capture time and pa
   assert.equal(fixture.injuries_and_byes.injuries_as_of, original.meta.generated_at);
   assert.ok(fixture.injury_watch.length > 0);
   for (const row of fixture.injury_watch) assert.equal(row.injuries_as_of, original.meta.generated_at);
-  assert.equal(recapSchema.safeParse(fixture).success, true);
+  assert.equal(recapSchema.safeParse(asCurrentVersion(fixture)).success, true);
   for (const target of ['availability', 'watch']) {
-    const invalid = structuredClone(fixture);
+    const invalid = structuredClone(asCurrentVersion(fixture));
     const row = target === 'availability' ? invalid.injuries_and_byes : invalid.injury_watch[0];
     row.injuries_as_of = 'not-a-timestamp';
     assert.equal(recapSchema.safeParse(invalid).success, false, target);
@@ -253,7 +253,7 @@ test('Migration preserves explicitly unknown legacy pending coverage and passes 
   assert.equal(fixture.pending_claims_meta.source_count_known, false);
   assert.equal(fixture.pending_claims_meta.fetched, null);
   assert.match(fixture.pending_claims_meta.source_note, /live recapture required/);
-  assert.equal(recapSchema.safeParse(fixture).success, true);
+  assert.equal(recapSchema.safeParse(asCurrentVersion(fixture)).success, true);
 });
 
 test('Invariant: section selection retains mandatory context and matching section metadata', () => {
@@ -290,7 +290,7 @@ test('C5 exact requested compact options reduce serialized, pretty and wrapper b
     compact: true, include_history: false, include_gap_detail: false, include_optimal_assignment: false
   });
   const compact = selectRecapSections(fixture, COMPACT_REQUESTED_OPTIONS);
-  const expected = legacyCompact(selectRecapSections(fixture, { ...COMPACT_REQUESTED_OPTIONS, compact: false }));
+  const expected = currentCompact(selectRecapSections(fixture, { ...COMPACT_REQUESTED_OPTIONS, compact: false }));
   assert.deepEqual(compact, expected);
   for (const team of compact.bench_analysis.teams) {
     assert.equal(Object.hasOwn(team, 'assignment'), false);
@@ -309,7 +309,7 @@ test('C5 exact requested compact options reduce serialized, pretty and wrapper b
 
 test('Invariant: compact-only removes null object fields while retaining arrays, zero and false', () => {
   const before = structuredClone(fixture);
-  assert.deepEqual(selectRecapSections(fixture, { compact: true }), legacyCompact(fixture));
+  assert.deepEqual(selectRecapSections(fixture, { compact: true }), currentCompact(fixture));
   const synthetic = structuredClone(fixture);
   synthetic.meta.probe = { zero: 0, flag: false, empty: [], absent: null, array: [null, 0, false] };
   assert.deepEqual(selectRecapSections(synthetic, { compact: true }).meta.probe, { zero: 0, flag: false, empty: [], array: [null, 0, false] });
@@ -318,7 +318,7 @@ test('Invariant: compact-only removes null object fields while retaining arrays,
 
 test('D schema discovery describes v1.2 controls, slot semantics and independent swaps', () => {
   const schema = getRecapSchema();
-  assert.equal(schema.properties.schema_version.const, '1.2.0');
+  assert.equal(schema.properties.schema_version.const, SCHEMA_VERSION);
   for (const name of ['include_history', 'include_gap_detail', 'include_optimal_assignment']) assert.ok(schema.description.includes(name));
   assert.match(schema.properties.bench_analysis.properties.teams.items.properties.swaps.description, /Independent/);
   assert.match(schema.properties.injuries_and_byes.description, /not a final next-week lineup/);

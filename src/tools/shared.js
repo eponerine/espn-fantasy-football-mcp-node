@@ -40,8 +40,8 @@ export const teamIdParam = z
 
 export const READ_ONLY = { readOnlyHint: true, destructiveHint: false, openWorldHint: true };
 
-export function jsonResult(data) {
-  return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+export function jsonResult(data, { pretty = true } = {}) {
+  return { content: [{ type: 'text', text: pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data) }] };
 }
 
 export function errorResult(error) {

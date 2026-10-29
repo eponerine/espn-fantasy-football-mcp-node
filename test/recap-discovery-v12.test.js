@@ -68,7 +68,7 @@ test('tools/list exposes recap 1.2 controls and get_recap_schema over MCP', { ti
   const schema = JSON.parse(result.content.find(part => part.type === 'text').text);
   assert.deepEqual(schema, getRecapSchema());
   assert.equal(schema.properties.schema_version.const, SCHEMA_VERSION);
-  assert.match(schema.description, /Recap 1\.2\.0/);
+  assert.match(schema.description, /Recap 1\.3\.0/);
   assert.deepEqual(connection.notifications, []);
 });
 

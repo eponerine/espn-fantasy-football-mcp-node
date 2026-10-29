@@ -109,9 +109,12 @@ function normalizeEspnRanks(payload, teams, nameToId) {
 function ownerDisplayName(team) {
   const direct = team.owner_name ?? team.owner_display_name ?? team.manager_name;
   if (typeof direct === 'string') return direct;
+  const fullName = Array.isArray(team.owner_names) ? team.owner_names.find((name) => typeof name === 'string' && name.trim()) : null;
+  if (fullName) return fullName.trim();
   const candidates = [team.owners, team.members, team.owner].flatMap((value) => Array.isArray(value) ? value : value == null ? [] : [value]);
   const owner = candidates.find((value) => value && typeof value === 'object');
-  return owner?.display_name ?? owner?.displayName ?? owner?.name ?? null;
+  const firstLast = [owner?.firstName, owner?.lastName].filter((part) => typeof part === 'string' && part.trim()).join(' ').trim();
+  return firstLast || (owner?.display_name ?? owner?.displayName ?? owner?.name ?? null);
 }
 
 function recordHistory(weeks) {
@@ -167,6 +170,10 @@ function medianScoringFields(home, away) {
     home_weekly_record: home.weekly_record,
     away_weekly_record: away.weekly_record
   };
+}
+
+function withTeamKey(record) {
+  return record ? { ...record, team: record.name } : record;
 }
 
 export function buildRecapData({
@@ -342,9 +349,9 @@ export function buildRecapData({
     bench_points_season: fromCents(benchSeasonTotal),
     week_high: topScorer ? { team_id: topScorer.team_id, team: topScorer.name, score: topScorer.score } : null,
     week_low: lowScorer ? { team_id: lowScorer.team_id, team: lowScorer.name, score: lowScorer.score } : null,
-    season_high: currentRecord,
-    previous_season_high: previousRecord,
-    season_low: currentSeason.low,
+    season_high: withTeamKey(currentRecord),
+    previous_season_high: withTeamKey(previousRecord),
+    season_low: withTeamKey(currentSeason.low),
     closest_margin: closestMatchup,
     largest_margin: seasonMargin ? { week: seasonMargin.week, margin: fromCents(seasonMargin.margin_cents), matchup: seasonMargin.matchup } : null,
     previous_largest_margin: previousMargin ? { week: previousMargin.week, margin: fromCents(previousMargin.margin_cents), matchup: previousMargin.matchup } : null,
@@ -449,8 +456,15 @@ export function buildRecapData({
       .map((transaction) => ({ ...transaction, scoring_period: week + 1 })),
     pending_claims_meta: {
       scoring_period: week + 1,
-      transaction_types_checked: ['WAIVER', 'FREEAGENT'],
-      source_count: pendingTransactions.length
+      transaction_types_checked: ['WAIVER', 'FREEAGENT', 'WAIVER_ERROR'],
+      pending_types: ['WAIVER', 'FREEAGENT'],
+      pending_statuses: ['PENDING', 'CANCELED', 'CANCELLED'],
+      source_count: pendingTransactions.length,
+      source_status_counts: pendingTransactions.reduce((counts, transaction) => {
+        const key = `${transaction.type}:${transaction.status}`;
+        counts[key] = (counts[key] ?? 0) + 1;
+        return counts;
+      }, {})
     },
     injuries_and_byes: availability,
     power_rankings: rankings.map((rank) => ({ ...rank, team: teamsById.get(rank.team_id)?.team_name ?? rank.team })),

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { recapSchema } from '../recap/schema.js';
 import { selectRecapSections } from '../recap/payload.js';
+import { asCurrentVersion } from './helpers/recap-fixture-migration.js';
 
 let fixture;
 try {
@@ -14,12 +15,12 @@ const options = { skip: fixture ? false : 'Week 7 capture requires local ESPN_S2
 
 test('Week 7 fixture has the requested scope, sanitized owners and versioned schema', options, () => {
   assert.deepEqual([fixture.meta.league_id, fixture.meta.season, fixture.meta.week], [380348, 2026, 7]);
-  assert.equal(recapSchema.safeParse(fixture).success, true);
+  assert.equal(recapSchema.safeParse(asCurrentVersion(fixture)).success, true);
   for (const team of fixture.teams) {
     assert.equal(team.owner_name, `owner_${team.team_id}`);
     assert.equal(team.display_name, team.name.trim());
   }
-  assert.equal(recapSchema.safeParse(selectRecapSections(fixture, { sections: ['team_lineups'], compact: true })).success, true);
+  assert.equal(recapSchema.safeParse(asCurrentVersion(selectRecapSections(fixture, { sections: ['team_lineups'], compact: true }))).success, true);
 });
 
 test('Week 7 scoreboard, preview and availability references reconcile', options, () => {

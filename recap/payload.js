@@ -1,15 +1,71 @@
 import { rankTopPlayers } from '../src/domain/injury-report.js';
 import { fromCents, toCents } from './numbers.js';
 
-export const SCHEMA_VERSION = '1.2.0';
+export const SCHEMA_VERSION = '1.3.0';
+// Player keys emitted as explicit null (never omitted), including in compact mode.
+export const PLAYER_NULLABLE_KEYS = ['pro_team', 'week_points', 'projected_points', 'percent_rostered'];
 export const RECAP_SECTIONS = [
   'teams', 'week_summary', 'scoreboard', 'standings', 'season_summary', 'players',
   'bench_analysis', 'team_lineups', 'roster_moves', 'pending_claims',
   'injuries_and_byes', 'injury_watch', 'power_rankings', 'prior_power_rankings', 'preview', 'validation'
 ];
 
+function slimRecap(recap) {
+  const lean = (row) => row && { team_id: row.team_id, luck_delta: row.luck_delta, expected_wins: row.expected_wins };
+  const matchupRef = (matchup) => {
+    if (!matchup) return matchup;
+    const index = recap.scoreboard?.findIndex((row) => row.home_team_id === matchup.home_team_id
+      && row.away_team_id === matchup.away_team_id) ?? -1;
+    return { matchup_index: index < 0 ? null : index, home_team_id: matchup.home_team_id,
+      away_team_id: matchup.away_team_id, margin: matchup.margin };
+  };
+  const historicMargin = (entry) => entry && { week: entry.week, margin: entry.margin,
+    home_team_id: entry.matchup.home_team_id, away_team_id: entry.matchup.away_team_id };
+  if (recap.week_summary) {
+    const summary = recap.week_summary;
+    summary.closest_margin = matchupRef(summary.closest_margin);
+    summary.biggest_margin_this_week = matchupRef(summary.biggest_margin_this_week);
+    summary.largest_margin = historicMargin(summary.largest_margin);
+    summary.previous_largest_margin = historicMargin(summary.previous_largest_margin);
+  }
+  if (recap.season_summary) {
+    recap.season_summary.luckiest = lean(recap.season_summary.luckiest);
+    recap.season_summary.unluckiest = recap.season_summary.unluckiest.map(lean);
+  }
+  if (recap.bench_analysis) recap.bench_analysis.what_ifs = recap.bench_analysis.what_ifs.map((row) => row.team_id);
+  if (recap.roster_moves) {
+    const top = recap.roster_moves.top_spender;
+    recap.roster_moves.top_spender = top && { team_id: top.team_id };
+    for (const team of recap.roster_moves.teams) {
+      team.free_agent_adds = team.free_agent_adds.map((row) => row.player);
+      team.drops = team.drops.map((row) => row.player);
+    }
+  }
+  if (recap.prior_power_rankings) recap.prior_power_rankings = recap.prior_power_rankings.map((row) => ({
+    team_id: row.team_id, rank: row.rank, all_play: row.all_play, points_for: row.points_for
+  }));
+  if (recap.preview) for (const game of recap.preview) game.teams = game.teams.map((team) => ({
+    team_id: team.team_id, espn_power_score: team.espn_power_score, next_week_flags: team.next_week_flags
+  }));
+  if (recap.injuries_and_byes) {
+    const withoutSlotAlias = ({ slot, ...row }) => row;
+    recap.injuries_and_byes.teams = recap.injuries_and_byes.teams.map((team) => ({
+      team_id: team.team_id,
+      byes: team.byes.map(withoutSlotAlias),
+      ir_players: team.ir_players.map(withoutSlotAlias),
+      gaps: team.gaps.filter((gap) => gap.empty_slots > 0 || gap.starter_without_healthy_bench_cover).map((gap) => ({
+        ...gap,
+        starters_on_bye_or_out: gap.starters_on_bye_or_out.map(withoutSlotAlias),
+        healthy_bench_eligible: gap.healthy_bench_eligible.map(withoutSlotAlias)
+      }))
+    }));
+  }
+  return recap;
+}
+
 export function selectRecapSections(recap, {
-  sections, compact = false, include_history = true, include_gap_detail = false, include_optimal_assignment = true
+  sections, compact = false, include_history = true, include_gap_detail = false, include_optimal_assignment = true,
+  slim = false
 } = {}) {
   if (sections?.some((section) => !RECAP_SECTIONS.includes(section))) {
     throw new Error('Unknown recap section.');
@@ -34,10 +90,12 @@ export function selectRecapSections(recap, {
   if (!include_gap_detail && selected.injuries_and_byes) for (const team of selected.injuries_and_byes.teams) {
     team.gaps = team.gaps.filter((gap) => gap.empty_slots > 0 || gap.starter_without_healthy_bench_cover);
   }
+  if (slim) slimRecap(selected);
   function trim(value) {
     if (Array.isArray(value)) return value.map(trim);
     if (value && typeof value === 'object') {
-      return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== null)
+      return Object.fromEntries(Object.entries(value)
+        .filter(([key, entry]) => entry !== null || PLAYER_NULLABLE_KEYS.includes(key))
         .map(([key, entry]) => [key, trim(entry)]));
     }
     return value;
@@ -61,6 +119,9 @@ export function normalizeRecapStrings(recap) {
   }
   return visit(recap, null, []);
 }
+
+// ESPN reports healthy D/ST as NORMAL; players use ACTIVE.
+const normalizeStatus = (status) => status === 'NORMAL' ? 'ACTIVE' : status;
 
 export function buildRosterDetails({ teams, currentPlayersByTeam, rostersByTeam, lineupSlots, week, injuries_as_of }) {
   const startingSlots = new Set(lineupSlots.filter((slot) => ['START', 'FLEX'].includes(slot.type)).map((slot) => slot.slot));
@@ -91,7 +152,7 @@ export function buildRosterDetails({ teams, currentPlayersByTeam, rostersByTeam,
         projected_points: player.projected_points ?? null,
         percent_rostered: percentRostered ?? null,
         pro_team: String(proTeam).trim().toLowerCase() === 'none' ? null : proTeam,
-        injury_status: next?.injury_status ?? player.injury_status ?? null,
+        injury_status: normalizeStatus(next?.injury_status ?? player.injury_status ?? null),
         is_bye_next_week: Boolean(proTeam && String(proTeam).trim().toLowerCase() !== 'none'
           && (next?.on_bye_week === true || byeTeams.has(proTeam)))
       };
@@ -102,6 +163,8 @@ export function buildRosterDetails({ teams, currentPlayersByTeam, rostersByTeam,
     teamLineups.push({
       team_id: team.team_id,
       roster_week: week,
+      status_week: week == null ? null : week + 1,
+      injury_status_as_of: injuries_as_of ?? null,
       starters_total: fromCents(starters.reduce((total, player) => total + toCents(player.points), 0)),
       bench_total: fromCents(bench.reduce((total, player) => total + toCents(player.points), 0)),
       starters,

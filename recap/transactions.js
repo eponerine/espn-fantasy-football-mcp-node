@@ -15,8 +15,8 @@ export function dedupeTransactions(transactions = []) {
     const added = addedItem(transaction);
     const key = [transaction.team_id, added?.playerId ?? added?.player, transaction.bid_amount ?? 0, transaction.type].join('|');
     const current = rowsByKey.get(key);
-    const rank = preferredStatus[transaction.status] ?? 0;
-    const currentRank = preferredStatus[current?.status] ?? -1;
+    const rank = String(transaction.status).startsWith('FAILED') ? 3 : preferredStatus[transaction.status] ?? 0;
+    const currentRank = current == null ? -1 : String(current.status).startsWith('FAILED') ? 3 : preferredStatus[current.status] ?? 0;
     if (current?.status === 'EXECUTED' && transaction.status === 'EXECUTED'
       && Number(current.date) !== Number(transaction.date)) {
       rowsByKey.set(`${key}|${transaction.date}`, transaction);
@@ -43,11 +43,19 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
     && addedItem(candidate)?.playerId === addedItem(transaction)?.playerId
     && (candidate.scoring_period ?? week) === (transaction.scoring_period ?? week)
     && Math.floor(Number(candidate.date) / 1000) === Math.floor(Number(transaction.date) / 1000));
+  const dropAlreadyExecuted = (transaction) => {
+    const drop = droppedItem(transaction);
+    return Boolean(drop) && clean.some((candidate) => candidate !== transaction && candidate.status === 'EXECUTED'
+      && candidate.team_id === transaction.team_id && droppedItem(candidate)?.playerId === drop.playerId
+      && Math.floor(Number(candidate.date) / 1000) <= Math.floor(Number(transaction.date) / 1000));
+  };
   const outcomeFor = (transaction) => {
     const winner = winnerFor(transaction);
     if (winner && Number(winner.bid_amount) > Number(transaction.bid_amount)) return 'outbid';
     if (winner && Number(winner.bid_amount) === Number(transaction.bid_amount)) return 'tiebreak_lost';
-    if (!winner && transaction.status === 'FAILED_PLAYERALREADYDROPPED') return 'player_already_dropped';
+    if (!winner && transaction.status === 'FAILED_PLAYERALREADYDROPPED') {
+      return dropAlreadyExecuted(transaction) ? 'drop_player_already_dropped' : 'player_already_dropped';
+    }
     return 'unknown';
   };
   const teamById = new Map(teams.map((team) => [team.team_id, team]));
@@ -56,11 +64,13 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
     team: team.team_name ?? team.name,
     executed_claims: [],
     failed_bids: [],
+    unprocessed_bids: [],
     free_agent_adds: [],
     drops: [],
     faab_spent: 0,
     faab_bid: 0,
-    faab_lost: 0
+    faab_lost: 0,
+    faab_unprocessed: 0
   }]));
 
   for (const transaction of clean) {
@@ -69,8 +79,8 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
     const bid = Math.max(0, Number(transaction.bid_amount) || 0);
     const add = addedItem(transaction);
     const drop = droppedItem(transaction);
-    summary.faab_bid += bid;
     if (transaction.status === 'EXECUTED') {
+      summary.faab_bid += bid;
       summary.faab_spent += bid;
       if (drop) summary.drops.push({ player_id: drop.playerId, player: drop.player });
       if (add) {
@@ -93,17 +103,28 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
         if (transaction.type === 'FREEAGENT') summary.free_agent_adds.push({ player_id: add.playerId, player: add.player });
       }
     } else if (String(transaction.status).startsWith('FAILED')) {
+      summary.faab_bid += bid;
       summary.faab_lost += bid;
       if (add) summary.failed_bids.push({
         player_id: add.playerId,
         player: add.player,
         bid,
+        dropped_player: drop?.player ?? null,
         reason: transaction.status,
         outcome: outcomeFor(transaction),
         winner_team_id: winnerFor(transaction)?.team_id ?? null,
         winning_bid: winnerFor(transaction)?.bid_amount ?? null,
         winner: teamById.get(winnerFor(transaction)?.team_id)?.team_name
           ?? teamById.get(winnerFor(transaction)?.team_id)?.name ?? null
+      });
+    } else {
+      summary.faab_unprocessed += bid;
+      summary.unprocessed_bids.push({
+        player_id: add?.playerId ?? null,
+        player: add?.player ?? null,
+        bid,
+        status: transaction.status ?? null,
+        transaction_type: transaction.type ?? null
       });
     }
   }
@@ -146,6 +167,7 @@ export function summarizeTransactions({ transactions, teams, playersByTeam, week
     summary.faab_spent = fromCents(toCents(summary.faab_spent));
     summary.faab_bid = fromCents(toCents(summary.faab_bid));
     summary.faab_lost = fromCents(toCents(summary.faab_lost));
+    summary.faab_unprocessed = fromCents(toCents(summary.faab_unprocessed));
   }
   const teamsWithMoves = [...summaries.values()];
   const leagueTotal = teamsWithMoves.reduce((sum, team) => sum + toCents(team.faab_spent), 0);
